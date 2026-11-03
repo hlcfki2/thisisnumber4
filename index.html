@@ -1,0 +1,2980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Welcome to Our Wedding</title>
+    <!-- 🌟 背景圖與關鍵 UI 元素預載，實現零延遲體驗 -->
+    <link rel="preload" as="image" href="bg.jpg">
+    <link rel="preload" as="image" href="opening.bg.jpg">
+    <link rel="preload" as="image" href="title.gif">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400..700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        button, a, input, label, textarea, select {
+            touch-action: manipulation;
+        }
+
+        img {
+            -webkit-touch-callout: none;
+            user-select: none;
+        }
+
+        /* 🌟 嚴格控制 iOS 所有輸入框字型大小 >= 16px，徹底杜絕自動放大與頁面抖動 */
+        @media screen and (max-width: 768px) {
+            input, textarea, select {
+                font-size: 16px !important;
+            }
+        }
+
+        /* 🌟 Apple 官方原生字型疊代與字距行高微調 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", 'Inter', sans-serif;
+            letter-spacing: -0.011em;
+            line-height: 1.47059;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            background-color: #1a1a1a;
+        }
+
+        /* 🌟 限制開場時頁面完全無法上下滾動 */
+        body.intro-active {
+            overflow: hidden !important;
+            height: 100dvh;
+            position: fixed;
+            width: 100%;
+        }
+
+        /* 🌟 完美固定背景圖層（結合 GPU 加速，徹底解決手機滾動時背景被郁到或跳動的問題） */
+        .fixed-bg-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -30;
+            background-image: url('./bg.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transform: translateZ(0);
+            will-change: transform;
+        }
+        .fixed-bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -20;
+            background-color: rgba(0, 0, 0, 0.4);
+            transform: translateZ(0);
+        }
+
+        /* 🌟 iOS 橡皮筋彈性滾動通用類別（允許 overscroll 鏈結至父層網頁） */
+        .ios-scroll {
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: auto;
+        }
+        .ios-scroll::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        .ios-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .ios-scroll::-webkit-scrollbar-thumb {
+            background: rgba(120, 138, 117, 0.3);
+            border-radius: 9999px;
+        }
+        .ios-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(120, 138, 117, 0.5);
+        }
+
+        /* 🌟 多層次柔和擬真陰影 */
+        .apple-card-shadow {
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.08), 0 0 1px 1px rgba(0, 0, 0, 0.04);
+        }
+
+        .serif-title { font-family: 'Playfair Display', serif; }
+        
+        .typewriter-font { 
+            font-family: 'Courier Prime', 'Courier New', Courier, monospace; 
+            letter-spacing: -0.02em;
+        }
+
+        /* 🌟 🖨️ 打字機逐字列印效果與光標閃爍（速度設為 140ms） */
+        .typing-cursor::after {
+            content: '▌';
+            display: inline-block;
+            margin-left: 2px;
+            color: #6b2d38;
+            animation: cursorBlink 0.8s infinite;
+        }
+        @keyframes cursorBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* 🌟 iOS 膠囊切換器滑動軌跡 */
+        .segmented-pill {
+            transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        /* 🌟 分頁切換絲滑過渡動畫 */
+        .tab-content-transition {
+            transition: opacity 0.3s cubic-bezier(0.25, 1, 0.5, 1), transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .tab-animating-out {
+            opacity: 0;
+            transform: scale(0.97) translateY(8px);
+        }
+        .tab-animating-in {
+            opacity: 0;
+            transform: scale(0.97) translateY(-8px);
+        }
+
+        /* 🌟 Apple 官方慢速呼吸動態效果 (Ken Burns Effect) */
+        @keyframes kenBurns {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.07); }
+        }
+        .animate-ken-burns {
+            animation: kenBurns 12s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        /* 🌟 進入進場頁面時，背景先呈現 1 秒，其他元素才緩緩向上浮現 */
+        .animate-delayed-fade {
+            opacity: 0;
+            transform: translateY(15px);
+            animation: delayedFadeIn 1s cubic-bezier(0.25, 1, 0.5, 1) 1s forwards;
+        }
+
+        @keyframes delayedFadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 🌟 主介面預設完全隱藏，點擊按鈕後開場淡出，背景展示 1 秒後順滑浮現 */
+        .main-content {
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+            transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .main-content.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        /* 🌟 絲滑文字淡入淡出切換特效類別 */
+        .lang-fade-effect {
+            transition: opacity 0.25s ease-in-out;
+        }
+
+        @keyframes modalPop {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .telegram-card {
+            animation: modalPop 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        .modal-animate {
+            animation: modalPop 0.3s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        /* 🌟 微壓感觸控縮放 (Active Scale) */
+        button:active:not(:disabled), a:active {
+            transform: scale(0.96);
+            transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .telegram-paper {
+            background-color: #f7f3e8;
+            background-image: radial-gradient(#e2d9c8 1px, transparent 1px);
+            background-size: 12px 12px;
+            box-shadow: 2px 3px 10px rgba(0,0,0,0.15), inset 0 0 20px rgba(180, 160, 130, 0.2);
+            border: 1px solid #c4b59b;
+        }
+
+        .modal-img-transition {
+            cursor: grab;
+            transition: opacity 0.25s ease;
+        }
+        .modal-img-transition:active {
+            cursor: grabbing;
+        }
+
+        .btn-morph {
+            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
+        }
+        .btn-morph.morphing {
+            width: 3rem !important;
+            height: 3rem !important;
+            border-radius: 9999px !important;
+            padding: 0 !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+        }
+
+        #toastContainer {
+            position: fixed;
+            bottom: calc(2rem + env(safe-area-inset-bottom));
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            pointer-events: none;
+        }
+        .toast-item {
+            background: rgba(30, 30, 30, 0.92);
+            backdrop-filter: blur(16px);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 9999px;
+            font-size: 13px;
+            font-weight: 500;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            animation: toastIn 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            pointer-events: auto;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(12px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        #batchActionToolbar.floating-bottom {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 60;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(24px);
+            border-top: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 16px 20px;
+            padding-bottom: calc(16px + env(safe-area-inset-bottom));
+            box-shadow: 0 -15px 35px rgba(0, 0, 0, 0.12);
+            border-radius: 2.25rem 2.25rem 0 0;
+            animation: toastIn 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        #galleryContainer > div {
+            content-visibility: auto;
+            contain-intrinsic-size: 150px 150px;
+            will-change: transform;
+        }
+    </style>
+</head>
+<body class="min-h-[100dvh] flex flex-col items-center justify-between px-4 py-8 text-neutral-800 pb-[calc(7rem+env(safe-area-inset-bottom))] intro-active">
+
+    <!-- 🌟 完美固定的背景層與遮罩 -->
+    <div class="fixed-bg-layer"></div>
+    <div class="fixed-bg-overlay"></div>
+
+    <!-- 🌟 Apple 風格沉浸式開場引導畫面 -->
+    <div id="introSplash" class="fixed inset-0 z-50 flex flex-col items-center justify-between p-6 text-white transition-all duration-500 select-none overflow-hidden bg-neutral-900 pointer-events-auto">
+        <img src="opening.bg.jpg" class="absolute inset-0 w-full h-full object-cover -z-20 animate-ken-burns pointer-events-none select-none" alt="Intro Background" onerror="this.onerror=null; this.src='bg.jpg';" style="-webkit-touch-callout: none;">
+        <div class="absolute inset-0 bg-black/40 -z-10 pointer-events-none"></div>
+
+        <button onclick="toggleLanguage()" class="absolute top-6 right-6 bg-white/20 hover:bg-white/35 text-white text-xs px-3.5 py-1.5 rounded-full backdrop-blur-md transition shadow-sm flex items-center gap-1.5 border border-white/30 z-50 cursor-pointer">
+            🌐 <span id="introLangLabel" class="font-medium">EN</span>
+        </button>
+
+        <div class="w-full text-center pt-10 animate-delayed-fade pointer-events-none">
+            <p class="text-[10px] md:text-xs uppercase tracking-[0.25em] text-neutral-200 font-light lang-fade-effect" data-i18n="introSubtitle">SHARE YOUR FAVORITE MOMENTS</p>
+        </div>
+        
+        <div class="text-center space-y-3 max-w-md animate-delayed-fade px-4 flex flex-col items-center justify-center pointer-events-none">
+            <div class="w-full flex justify-center items-center pointer-events-none select-none">
+                <img src="title.gif" alt="Welcome to Our Wedding" class="max-w-[260px] md:max-w-[320px] h-auto object-contain drop-shadow-lg pointer-events-none select-none" style="-webkit-touch-callout: none;">
+            </div>
+            <p class="text-xs md:text-sm text-neutral-200 font-light tracking-wider drop-shadow lang-fade-effect pointer-events-none" data-i18n="introDesc">Tap the button below to open our romantic moment</p>
+        </div>
+
+        <div class="w-full max-w-xs pb-10 animate-delayed-fade z-50">
+            <button onclick="dismissIntro()" class="w-full bg-white/20 hover:bg-white/35 text-white font-medium py-4 px-8 rounded-full backdrop-blur-2xl border border-white/40 shadow-2xl transition-all duration-300 text-sm tracking-widest uppercase flex items-center justify-center gap-2 group active:scale-95 cursor-pointer">
+                <span class="lang-fade-effect" data-i18n="introBtn">Enter Wedding Memories</span>
+                <span class="group-hover:translate-x-1 transition-transform duration-300">→</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 🌟 主介面容器 -->
+    <div id="mainContentWrapper" class="w-full flex flex-col items-center justify-between main-content">
+
+        <!-- 頂部標題區 -->
+        <header class="w-full max-w-md text-center text-white mt-2 drop-shadow-md relative">
+            <button onclick="toggleLanguage()" class="absolute top-0 right-0 bg-white/20 hover:bg-white/35 text-white text-xs px-3 py-1.5 rounded-full backdrop-blur-md transition shadow-sm flex items-center gap-1.5 border border-white/30 cursor-pointer">
+                🌐 <span id="langLabel" class="font-medium">EN</span>
+            </button>
+
+            <h1 class="serif-title text-3xl md:text-4xl tracking-wide mb-1.5 font-normal lang-fade-effect" data-i18n="welcome">Welcome to Our<br>Wedding</h1>
+            <p class="text-[11px] md:text-xs uppercase tracking-[0.25em] text-neutral-200 mb-4 font-light lang-fade-effect" data-i18n="subtitle">Share Your Favorite Moments</p>
+        </header>
+
+        <!-- 🌟 iOS 膠囊滑動切換器 (Segmented Control) -->
+        <nav class="sticky top-4 z-40 w-full max-w-md px-1 mb-2">
+            <div class="bg-neutral-200/80 backdrop-blur-2xl p-1.5 rounded-[2rem] apple-card-shadow border border-white/50 relative overflow-hidden">
+                <div id="navSegmentPill" class="absolute top-1.5 bottom-1.5 left-1.5 w-[calc(50%-0.375rem)] bg-[#788a75] rounded-[1.5rem] segmented-pill shadow-sm"></div>
+                <div class="grid grid-cols-2 relative z-10 text-xs font-medium">
+                    <button id="btnBoth" onclick="switchMode('both')" class="py-2.5 px-3 rounded-[1.5rem] text-center transition-colors duration-200 text-white font-semibold lang-fade-effect cursor-pointer" data-i18n="tabBoth">Upload & Gallery</button>
+                    <button id="btnBlessing" onclick="switchMode('blessing')" class="py-2.5 px-3 rounded-[1.5rem] text-center transition-colors duration-200 text-neutral-600 hover:text-neutral-900 lang-fade-effect cursor-pointer" data-i18n="tabBlessing">Blessing Wall</button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 主內容容器 -->
+        <main id="tabContentContainer" class="w-full max-w-md md:max-w-2xl my-2 space-y-6 tab-content-transition">
+            
+            <!-- 上傳卡片區 -->
+            <section id="uploadSection" class="bg-white/85 backdrop-blur-2xl rounded-[2.5rem] p-7 apple-card-shadow border border-white/50 transition-all duration-500">
+                <h2 class="serif-title text-2xl text-center text-neutral-800 mb-5 font-normal lang-fade-effect" data-i18n="uploadPhotosTitle">Upload Photos</h2>
+                
+                <form id="uploadForm" class="space-y-4.5">
+                    <div>
+                        <label class="block text-xs font-medium text-neutral-600 mb-1.5 ml-1 lang-fade-effect" data-i18n="nameLabel">Your Name / Message (Optional)</label>
+                        <input type="text" id="uploaderName" placeholder="e.g., Aunt Sarah & Uncle John" oninput="handleNameInput(this.value)"
+                            class="w-full px-5 py-3.5 bg-neutral-50/90 border border-neutral-200/80 rounded-2xl text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#c89f91] transition shadow-inner">
+                    </div>
+
+                    <div class="my-4">
+                        <div id="dropZoneContainer" class="border-2 border-dashed border-neutral-300 rounded-[2.5rem] p-5 text-center bg-neutral-50/60 hover:bg-neutral-100/60 transition shadow-sm relative min-h-[140px] flex flex-col items-center justify-center">
+                            
+                            <div id="dropZonePlaceholder" class="flex flex-col items-center justify-center py-2 w-full space-y-3">
+                                <div class="w-10 h-10 text-neutral-500 flex items-center justify-center bg-white rounded-full shadow-md mx-auto">📷</div>
+                                <p class="text-xs text-neutral-700 font-medium lang-fade-effect" data-i18n="tapToSelect">選擇相片來源</p>
+                                
+                                <div class="grid grid-cols-2 gap-2.5 w-full max-w-xs mx-auto">
+                                    <label class="bg-[#c89f91] hover:bg-[#b88c7d] text-white text-xs py-2.5 px-4 rounded-xl font-medium shadow transition flex items-center justify-center gap-1.5 cursor-pointer">
+                                        <span>📷</span> <span class="lang-fade-effect" data-i18n="takePhotoBtn">立即拍照</span>
+                                        <input type="file" accept="image/*" capture="environment" onchange="handleFileSelectInput(this)" class="hidden">
+                                    </label>
+                                    <label class="bg-neutral-200 hover:bg-neutral-300 text-neutral-800 text-xs py-2.5 px-4 rounded-xl font-medium transition flex items-center justify-center gap-1.5 cursor-pointer">
+                                        <span>🖼️</span> <span class="lang-fade-effect" data-i18n="selectGalleryBtn">手機相簿</span>
+                                        <input type="file" accept="image/*,.heic,.heif" multiple onchange="handleFileSelectInput(this)" class="hidden">
+                                    </label>
+                                </div>
+                                <p class="text-[11px] text-neutral-400 font-light lang-fade-effect" data-i18n="supportText">支援多張相片 (JPG, PNG, HEIC)</p>
+                            </div>
+
+                            <!-- 🌟 隔離容器防止 iOS 堆疊 -->
+                            <div id="pendingPreviewGrid" class="ios-scroll grid grid-cols-3 gap-2.5 w-full max-h-[220px] overflow-y-auto p-1 hidden relative z-30 isolate" onclick="event.stopPropagation()">
+                                <div class="relative w-full pb-[100%] rounded-2xl overflow-hidden bg-white/90 border-2 border-dashed border-[#c89f91] flex items-center justify-center shadow-sm hover:bg-neutral-50 transition cursor-pointer">
+                                    <input type="file" accept="image/*,.heic,.heif" multiple onchange="handleFileSelectInput(this)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20">
+                                    <div class="absolute inset-0 flex flex-col items-center justify-center text-[#c89f91] pointer-events-none">
+                                        <span class="text-2xl font-light">+</span>
+                                        <span class="text-[9px] font-medium lang-fade-effect" data-i18n="addMore">Add More</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between items-center mt-2 px-1">
+                            <span id="fileCount" class="text-xs text-[#b89083] font-semibold hidden"></span>
+                        </div>
+                    </div>
+
+                    <div id="progressContainer" class="space-y-2.5 hidden bg-neutral-50/90 p-4 rounded-2xl border border-neutral-200/80 shadow-sm">
+                        <div class="flex justify-between items-center text-xs text-neutral-700 font-medium">
+                            <span id="progressText">Uploading...</span>
+                            <button type="button" onclick="cancelUpload()" class="bg-red-100 hover:bg-red-200 text-red-600 text-[11px] px-3 py-1.5 rounded-xl transition font-medium shadow-sm lang-fade-effect cursor-pointer" data-i18n="cancelUploadBtn">Cancel</button>
+                        </div>
+                        <div class="w-full bg-neutral-200 rounded-full h-3 overflow-hidden shadow-inner">
+                            <div id="progressBar" class="bg-[#c89f91] h-3 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                        <div class="text-[11px] text-amber-800 bg-amber-50/90 p-2.5 rounded-2xl border border-amber-200/80 flex items-center gap-2 font-medium shadow-sm">
+                            <span>⏳</span> <span class="lang-fade-effect" data-i18n="uploadingWarning">上傳中，請保持網絡暢順並請勿離開此頁面</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="btn-morph w-full bg-[#c89f91] hover:bg-[#b88c7d] text-white py-3.5 rounded-2xl font-medium text-sm shadow-lg transition-all duration-200 flex items-center justify-center relative overflow-hidden cursor-pointer">
+                        <span id="btnText" class="lang-fade-effect" data-i18n="uploadBtn">Upload Photos</span>
+                        <span id="spinner" class="hidden w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        <span id="successCheck" class="hidden text-white font-bold text-base">✓</span>
+                    </button>
+                </form>
+                <div id="statusMessage" class="mt-3 text-center text-xs hidden"></div>
+            </section>
+
+            <!-- 相簿展示區 -->
+            <section id="albumSection" class="bg-white/85 backdrop-blur-2xl rounded-[2.5rem] p-7 apple-card-shadow border border-white/50 transition-all duration-500">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="serif-title text-2xl text-neutral-800 font-normal lang-fade-effect" data-i18n="galleryTitle">Wedding Gallery</h2>
+                    <div class="flex items-center gap-2">
+                        <button id="batchActionToggleBtn" onclick="toggleBatchActionMode()" class="text-xs text-[#788a75] underline transition font-medium lang-fade-effect cursor-pointer" data-i18n="batchAction">Batch Action</button>
+                        <button onclick="loadGallery()" class="text-xs text-[#c89f91] underline transition font-medium lang-fade-effect cursor-pointer" data-i18n="refresh">Refresh</button>
+                    </div>
+                </div>
+
+                <div class="flex flex-nowrap items-center justify-between gap-1.5 mb-4 bg-neutral-100/90 p-1.5 rounded-2xl shadow-inner overflow-hidden">
+                    <div class="bg-neutral-200/90 backdrop-blur-md p-0.5 rounded-xl relative overflow-hidden flex-1 min-w-0 max-w-[120px]">
+                        <div id="filterSegmentPill" class="absolute top-0.5 bottom-0.5 left-0.5 w-[calc(50%-0.125rem)] bg-[#788a75] rounded-lg segmented-pill shadow-sm"></div>
+                        <div class="grid grid-cols-2 relative z-10 text-[10px] font-medium text-center">
+                            <button onclick="setFilterMode('all')" id="filterAllBtn" class="py-1 text-white font-semibold transition-colors duration-200 lang-fade-effect truncate px-1 cursor-pointer" data-i18n="filterAll">All</button>
+                            <button onclick="setFilterMode('mine')" id="filterMineBtn" class="py-1 text-neutral-600 hover:text-neutral-900 transition-colors duration-200 lang-fade-effect truncate px-1 cursor-pointer" data-i18n="filterMine">Mine</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-neutral-200/90 backdrop-blur-md p-0.5 rounded-xl relative overflow-hidden flex-1 min-w-0 max-w-[130px]">
+                        <div id="densitySegmentPill" class="absolute top-0.5 bottom-0.5 left-0.5 w-[calc(25%-0.09375rem)] bg-[#788a75] rounded-lg segmented-pill shadow-sm" style="transform: translateX(200%);"></div>
+                        <div class="grid grid-cols-4 relative z-10 text-[10px] font-medium text-center">
+                            <button onclick="setAlbumDensity('1col')" id="density1ColBtn" class="py-1 text-neutral-600 transition-colors duration-200 lang-fade-effect cursor-pointer" data-i18n="col1">1</button>
+                            <button onclick="setAlbumDensity('2col')" id="density2ColBtn" class="py-1 text-neutral-600 transition-colors duration-200 lang-fade-effect cursor-pointer" data-i18n="col2">2</button>
+                            <button onclick="setAlbumDensity('3col')" id="density3ColBtn" class="py-1 text-white font-semibold transition-colors duration-200 lang-fade-effect cursor-pointer" data-i18n="col3">3</button>
+                            <button onclick="setAlbumDensity('4col')" id="density4ColBtn" class="py-1 text-neutral-600 transition-colors duration-200 lang-fade-effect cursor-pointer" data-i18n="col4">4</button>
+                        </div>
+                    </div>
+
+                    <button onclick="toggleFocusAlbum()" id="focusAlbumBtn" class="bg-white hover:bg-neutral-200 text-neutral-700 px-2 py-1.5 rounded-xl font-medium transition shadow-sm text-[10px] shrink-0 lang-fade-effect cursor-pointer" data-i18n="focusAlbum">
+                        Gallery View
+                    </button>
+                </div>
+
+                <div class="flex justify-between items-center mb-2 px-1">
+                    <span id="photoCountBadge" class="text-[11px] text-neutral-500 font-medium">0 photos</span>
+                </div>
+
+                <div id="galleryContainer" class="ios-scroll grid grid-cols-3 gap-3 min-h-[150px]">
+                    <p class="col-span-full text-center text-xs text-neutral-400 py-6 lang-fade-effect" data-i18n="loadingPhotos">Loading photos...</p>
+                </div>
+            </section>
+
+            <!-- 📜 復古打字機與古典電報牆 -->
+            <section id="blessingSection" class="bg-[#1b3022] backdrop-blur-2xl rounded-[2.5rem] p-5 md:p-7 space-y-5 apple-card-shadow border border-[#304d39]/60 text-[#f4efe6] hidden">
+                <div class="text-center border-b border-[#304d39] pb-3 space-y-1">
+                    <p class="typewriter-font text-[10px] tracking-[0.3em] uppercase text-[#c9b082]">Vintage Telegraph Office</p>
+                    <h2 class="serif-title text-2xl font-normal text-[#f4efe6] lang-fade-effect" data-i18n="blessingWallTitle">Wedding Telegrams</h2>
+                </div>
+                
+                <form id="blessingForm" class="space-y-3 bg-[#132319] p-4 rounded-[1.8rem] border border-[#2a4533] shadow-inner">
+                    <div>
+                        <label class="block typewriter-font text-[10px] text-[#c9b082] mb-1 uppercase tracking-wider ml-1 lang-fade-effect" data-i18n="blessingNameLabel">SENDER NAME / NICKNAME</label>
+                        <input type="text" id="blessingName" placeholder="e.g., Cousin May" required oninput="handleNameInput(this.value)"
+                            class="w-full px-4 py-2.5 bg-[#f7f3e8] border border-[#a89878] rounded-xl text-xs text-[#2b2b2b] typewriter-font focus:outline-none focus:ring-2 focus:ring-[#6b2d38] shadow-inner">
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-1 px-1">
+                            <label class="block typewriter-font text-[10px] text-[#c9b082] uppercase tracking-wider lang-fade-effect" data-i18n="blessingTextLabel">TELEGRAM MESSAGE</label>
+                            <span id="blessingCharCount" class="typewriter-font text-[10px] text-[#a89878]">0/150</span>
+                        </div>
+                        <textarea id="blessingText" rows="2.5" maxlength="150" placeholder="Wishing you a lifetime of love and happiness!" required oninput="handleBlessingInput()"
+                            class="w-full px-4 py-2.5 bg-[#f7f3e8] border border-[#a89878] rounded-xl text-xs text-[#2b2b2b] typewriter-font focus:outline-none focus:ring-2 focus:ring-[#6b2d38] shadow-inner resize-none"></textarea>
+                    </div>
+                    <button type="submit" id="blessingBtn" class="w-full bg-[#6b2d38] hover:bg-[#58242e] text-[#f4efe6] py-2.5 rounded-xl font-medium text-xs shadow-md transition-all duration-200 tracking-wider uppercase typewriter-font flex items-center justify-center gap-2 cursor-pointer">
+                        <span id="blessingBtnText" class="lang-fade-effect" data-i18n="sendBlessing">TRANSMIT TELEGRAM</span>
+                    </button>
+                </form>
+                <div id="blessingStatus" class="text-center text-xs hidden"></div>
+
+                <div>
+                    <div class="flex justify-between items-center mb-3 px-1">
+                        <h3 class="typewriter-font text-[10px] uppercase tracking-widest text-[#c9b082] lang-fade-effect" data-i18n="wishesTitle">RECEIVED TELEGRAMS</h3>
+                        <button onclick="loadBlessings()" class="typewriter-font text-[10px] text-[#c9b082] underline transition hover:text-white font-medium lang-fade-effect flex items-center gap-1.5 cursor-pointer">
+                            <span id="refreshWireText" data-i18n="refreshBlessings">Refresh Wire</span>
+                        </button>
+                    </div>
+                    <!-- 🌟 祝福牆滾動容器：支援 overscroll-behavior-y: auto 實現順勢拉動網頁 Scroller -->
+                    <div id="blessingContainer" class="ios-scroll grid grid-cols-1 gap-3 max-h-[750px] overflow-y-auto pr-1">
+                        <p class="col-span-full text-center text-xs text-[#a89878] typewriter-font py-6 lang-fade-effect" data-i18n="loadingBlessings">Connecting to telegraph line...</p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- 頁尾 -->
+        <footer class="text-white/70 text-[10px] tracking-wider uppercase drop-shadow flex items-center gap-2 mt-4 pb-12 font-light">
+            <span class="lang-fade-effect" data-i18n="footerSystem">Wedding Memory Sharing System</span>
+            <button onclick="openAdminModal()" class="text-white/40 hover:text-white transition cursor-pointer" title="Admin Panel">🔒</button>
+        </footer>
+    </div>
+
+    <!-- 底部批量操作欄 -->
+    <div id="batchActionToolbar" class="hidden space-y-2.5">
+        <div class="flex items-center justify-between max-w-md mx-auto px-1">
+            <span id="selectedBatchCountText" class="text-xs font-semibold text-neutral-800">0 photo(s) selected</span>
+            <div class="flex items-center gap-3">
+                <button onclick="selectAllGalleryPhotos(true)" class="text-xs text-[#788a75] underline font-medium lang-fade-effect cursor-pointer" data-i18n="selectAll">Select All</button>
+                <button onclick="selectAllGalleryPhotos(false)" class="text-xs text-neutral-500 underline font-medium lang-fade-effect cursor-pointer" data-i18n="clearSelection">Clear</button>
+                <button onclick="toggleBatchActionMode()" class="text-xs bg-neutral-200 hover:bg-neutral-300 text-neutral-800 px-3 py-1 rounded-full font-medium transition lang-fade-effect cursor-pointer" data-i18n="cancel">Cancel</button>
+            </div>
+        </div>
+        <div class="grid grid-cols-3 gap-2.5 max-w-md mx-auto items-center">
+            <button id="batchDownloadBtn" onclick="executeBatchDownload()" disabled class="bg-neutral-300 text-neutral-500 text-xs py-3 rounded-2xl cursor-not-allowed font-medium transition shadow-sm flex items-center justify-center lang-fade-effect" data-i18n="downloadSelected">Download</button>
+            <button id="batchShareBtn" onclick="executeBatchShare()" disabled class="bg-neutral-300 text-neutral-500 text-xs py-3 rounded-2xl cursor-not-allowed font-medium transition shadow-sm flex items-center justify-center lang-fade-effect" data-i18n="shareSelected">Share</button>
+            <button id="batchDeleteBtn" onclick="executeBatchDelete()" disabled class="btn-morph bg-neutral-300 text-neutral-500 text-xs py-3 rounded-2xl cursor-not-allowed font-medium transition shadow-sm flex items-center justify-center relative overflow-hidden">
+                <span id="batchDeleteBtnText" class="lang-fade-effect" data-i18n="deleteSelected">Delete</span>
+                <span id="batchDeleteSpinner" class="hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                <span id="batchDeleteCheck" class="hidden text-white font-bold text-sm">✓</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 燈箱 -->
+    <div id="imageModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-2xl hidden flex items-center justify-center p-2 select-none overflow-hidden transition-opacity duration-300" onclick="closeModal()">
+        
+        <div id="zoomHintEl" class="absolute top-4 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-md text-white/95 text-[10px] px-4 py-1.5 rounded-full tracking-wider typewriter-font z-50 pointer-events-none shadow-lg border border-white/20 transition-opacity duration-500 lang-fade-effect" data-i18n="zoomHint">
+            Double tap or pinch to zoom
+        </div>
+
+        <div id="modalContentWrapper" class="relative max-w-4xl max-h-[90vh] w-full h-full flex items-center justify-center modal-animate cursor-grab active:cursor-grabbing" style="touch-action: none;" onclick="event.stopPropagation()">
+
+            <div id="modalTrack" class="relative w-full h-full flex items-center justify-center overflow-hidden">
+                <div id="modalSlidePrev" class="absolute inset-0 flex items-center justify-center pointer-events-none" style="transform: translateX(-100%);">
+                    <img id="modalImgPrev" class="max-h-[85vh] max-w-full object-contain rounded-2xl shadow-2xl">
+                </div>
+                <div id="modalSlideCurrent" class="absolute inset-0 flex items-center justify-center" style="transform: translateX(0%);">
+                    <img id="modalImg" src="" class="max-h-[85vh] max-w-full object-contain rounded-2xl shadow-2xl modal-img-transition">
+                </div>
+                <div id="modalSlideNext" class="absolute inset-0 flex items-center justify-center pointer-events-none" style="transform: translateX(100%);">
+                    <img id="modalImgNext" class="max-h-[85vh] max-w-full object-contain rounded-2xl shadow-2xl">
+                </div>
+            </div>
+            
+            <div id="modalActionButtons" class="absolute bottom-4 left-4 flex items-center gap-2 z-20">
+                <button id="modalDownloadBtn" onclick="downloadCurrentModalImage(event)" class="bg-white/85 hover:bg-white text-neutral-800 text-xs px-4 py-2 rounded-2xl shadow-lg backdrop-blur-md transition font-medium border border-white/50 cursor-pointer">
+                    <span class="lang-fade-effect" data-i18n="downloadBtnText">Download Photo</span>
+                </button>
+                <button id="modalShareBtn" onclick="shareCurrentModalImage(event)" class="bg-white/85 hover:bg-white text-neutral-800 text-xs px-4 py-2 rounded-2xl shadow-lg backdrop-blur-md transition font-medium border border-white/50 cursor-pointer">
+                    <span class="lang-fade-effect" data-i18n="shareBtnText">Share Photo</span>
+                </button>
+            </div>
+
+            <button onclick="closeModal()" class="absolute top-3 right-3 bg-black/60 hover:bg-black/80 text-white rounded-full w-10 h-10 flex items-center justify-center text-lg transition shadow-md z-20 border border-white/20 cursor-pointer">✕</button>
+            <button onclick="prevModalImage(event)" class="absolute left-3 bg-black/40 hover:bg-black/70 text-white rounded-full w-11 h-11 flex items-center justify-center text-xl transition z-20 border border-white/20 cursor-pointer">‹</button>
+            <button onclick="nextModalImage(event)" class="absolute right-3 bg-black/40 hover:bg-black/70 text-white rounded-full w-11 h-11 flex items-center justify-center text-xl transition z-20 border border-white/20 cursor-pointer">›</button>
+            <div id="modalImageIndicator" class="absolute bottom-4 right-4 bg-black/50 text-white text-xs px-3.5 py-1.5 rounded-full tracking-widest typewriter-font z-20 border border-white/10">1 / 1</div>
+        </div>
+    </div>
+
+    <!-- 修改祝福彈窗 -->
+    <div id="editBlessingModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-2xl hidden flex items-center justify-center p-4 transition-opacity duration-300">
+        <div class="bg-white/95 backdrop-blur-2xl rounded-[2.5rem] max-w-md w-full p-7 apple-card-shadow space-y-4.5 modal-animate border border-white/60">
+            <div class="flex justify-between items-center">
+                <h3 class="serif-title text-xl font-semibold text-neutral-800 lang-fade-effect" data-i18n="editModalTitle">Edit My Blessing</h3>
+                <button onclick="closeEditModal()" class="text-neutral-400 hover:text-neutral-700 text-lg transition w-8 h-8 flex items-center justify-center rounded-full bg-neutral-100 cursor-pointer">✕</button>
+            </div>
+            <input type="hidden" id="editFileId">
+            <div>
+                <label class="block text-xs font-medium text-neutral-600 mb-1.5 ml-1 lang-fade-effect" data-i18n="blessingNameLabel">Your Name / Nickname</label>
+                <input type="text" id="editBlessingName" class="w-full px-5 py-3 bg-neutral-50/90 border border-neutral-200 rounded-2xl text-xs text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#c89f91] transition shadow-inner">
+            </div>
+            <div>
+                <div class="flex justify-between items-center mb-1.5 px-1">
+                    <label class="block text-xs font-medium text-neutral-600 lang-fade-effect" data-i18n="blessingTextLabel">Your Message to the Couple</label>
+                    <span id="editBlessingCharCount" class="text-[10px] text-neutral-400">0/150</span>
+                </div>
+                <textarea id="editBlessingText" rows="3" maxlength="150" oninput="handleEditBlessingInput()" class="w-full px-5 py-3 bg-neutral-50/90 border border-neutral-200 rounded-2xl text-xs text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#c89f91] transition shadow-inner resize-none"></textarea>
+            </div>
+            <button onclick="submitEditBlessing()" class="w-full bg-[#788a75] text-white py-3 rounded-2xl text-xs font-medium shadow-md hover:opacity-95 transition-all duration-200 lang-fade-effect cursor-pointer" data-i18n="saveChanges">
+                Save Changes
+            </button>
+        </div>
+    </div>
+
+    <!-- 後台彈窗 -->
+    <div id="adminModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-2xl hidden flex items-center justify-center p-4 transition-opacity duration-300">
+        <div class="bg-white/95 backdrop-blur-2xl rounded-[2.5rem] max-w-md w-full p-7 apple-card-shadow relative max-h-[90vh] flex flex-col modal-animate border border-white/60">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="serif-title text-xl font-semibold text-neutral-800 lang-fade-effect" data-i18n="adminModalTitle">Admin Dashboard</h3>
+                <button onclick="closeAdminModal()" class="text-neutral-400 hover:text-neutral-700 text-lg transition w-8 h-8 flex items-center justify-center rounded-full bg-neutral-100 cursor-pointer">✕</button>
+            </div>
+
+            <div id="adminLoginView" class="space-y-4 py-4">
+                <p class="text-xs text-neutral-500 lang-fade-effect" data-i18n="adminLoginDesc">Please enter admin password to unlock management features:</p>
+                <input type="password" id="adminPwdInput" placeholder="Enter password" 
+                    class="w-full px-5 py-3.5 bg-neutral-50/90 border border-neutral-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#c89f91] transition shadow-inner">
+                <button onclick="verifyAdmin()" class="w-full bg-[#788a75] text-white py-3.5 rounded-2xl text-sm font-medium shadow-md hover:opacity-95 transition-all duration-200 lang-fade-effect cursor-pointer" data-i18n="loginBtn">Login</button>
+                <p id="adminLoginError" class="text-xs text-red-600 text-center hidden"></p>
+            </div>
+
+            <div id="adminDashboardView" class="hidden flex-col flex-grow space-y-3.5 overflow-hidden">
+                <div class="flex gap-2">
+                    <a id="driveFolderBtn" href="#" target="_blank" class="flex-1 bg-[#c89f91] text-white text-center py-2.5 rounded-2xl text-xs font-medium shadow-md hover:opacity-95 transition-all duration-200 flex items-center justify-center lang-fade-effect" data-i18n="openDrive">
+                        Open Google Drive
+                    </a>
+                    <button onclick="loadAdminItems()" class="bg-neutral-100 hover:bg-neutral-200 px-4 py-2.5 rounded-2xl text-xs text-neutral-700 font-medium transition shadow-sm lang-fade-effect cursor-pointer" data-i18n="refresh">Refresh</button>
+                </div>
+
+                <div class="flex border-b border-neutral-200 text-xs font-medium">
+                    <button id="adminTabPhotos" onclick="switchAdminTab('photos')" class="py-2 px-4 border-b-2 border-[#788a75] text-[#788a75] transition font-semibold lang-fade-effect cursor-pointer" data-i18n="adminTabPhotos">Photos</button>
+                    <button id="adminTabBlessings" onclick="switchAdminTab('blessings')" class="py-2 px-4 text-neutral-400 hover:text-neutral-600 transition lang-fade-effect cursor-pointer" data-i18n="adminTabBlessings">Blessing</button>
+                </div>
+
+                <div id="adminPhotoToolbar" class="flex flex-col gap-2.5 bg-neutral-50 p-3 rounded-2xl border border-neutral-200 text-xs shadow-inner">
+                    <div class="flex items-center justify-between px-1">
+                        <div class="flex items-center gap-2">
+                            <button onclick="adminSelectAllPhotos(true)" class="text-[11px] text-[#788a75] underline font-medium lang-fade-effect cursor-pointer" data-i18n="selectAll">Select All</button>
+                            <span class="text-neutral-300">|</span>
+                            <button onclick="adminSelectAllPhotos(false)" class="text-[11px] text-neutral-400 underline font-medium lang-fade-effect cursor-pointer" data-i18n="clearSelection">Clear</button>
+                        </div>
+                        <span class="text-[11px] text-neutral-500 font-medium"><span id="adminSelectedPhotoCount">0</span> selected</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="adminBatchDownloadBtn" onclick="executeAdminBatchDownload()" disabled class="flex-1 bg-neutral-200 text-neutral-400 py-2 rounded-xl text-xs font-medium transition cursor-not-allowed lang-fade-effect" data-i18n="downloadSelected">Download Selected</button>
+                        <button id="adminBatchDeleteBtn" onclick="executeAdminBatchDelete()" disabled class="btn-morph flex-1 bg-neutral-200 text-neutral-400 py-2 rounded-xl text-xs font-medium transition cursor-not-allowed flex items-center justify-center relative overflow-hidden">
+                            <span id="adminBatchDeleteBtnText" class="lang-fade-effect" data-i18n="deleteSelected">Delete Selected</span>
+                            <span id="adminBatchDeleteSpinner" class="hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                            <span id="adminBatchDeleteCheck" class="hidden text-white font-bold text-sm">✓</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="adminBlessingToolbar" class="flex items-center justify-between bg-neutral-50 p-3 rounded-2xl border border-neutral-200 text-xs hidden shadow-inner">
+                    <div class="flex items-center gap-2">
+                        <button onclick="adminSelectAllBlessings(true)" class="text-[11px] text-[#788a75] underline font-medium lang-fade-effect cursor-pointer" data-i18n="selectAll">Select All</button>
+                        <span class="text-neutral-300">|</span>
+                        <button onclick="adminSelectAllBlessings(false)" class="text-[11px] text-neutral-400 underline font-medium lang-fade-effect cursor-pointer" data-i18n="clearSelection">Clear</button>
+                    </div>
+                    <button id="adminBatchBlessingDeleteBtn" onclick="executeAdminBatchBlessingDelete()" disabled class="btn-morph bg-neutral-200 text-neutral-400 px-3 py-2 rounded-xl text-xs font-medium transition cursor-not-allowed flex items-center justify-center relative overflow-hidden">
+                        <span id="adminBatchBlessingDeleteBtnText">Delete Selected (<span id="adminSelectedBlessingCount">0</span>)</span>
+                        <span id="adminBatchBlessingDeleteSpinner" class="hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        <span id="adminBatchBlessingDeleteCheck" class="hidden text-white font-bold text-sm">✓</span>
+                    </button>
+                </div>
+
+                <div id="adminItemsContainer" class="ios-scroll flex-grow overflow-y-auto space-y-2 border border-neutral-200 p-2.5 rounded-2xl bg-neutral-50 max-h-[260px] shadow-inner">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 回到頂部浮動按鈕 -->
+    <button id="scrollToTopBtn" onclick="scrollToTop()" class="fixed bottom-24 right-4 z-40 bg-white/90 hover:bg-white text-neutral-800 w-11 h-11 rounded-full shadow-xl backdrop-blur-md transition-all duration-300 hidden flex items-center justify-center text-sm font-bold border border-white/50 cursor-pointer" title="Scroll to top">
+        ↑
+    </button>
+
+    <script>
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzDQw4pt4GvrL6qpy-TFcwpQtsbPtX0baRls3Wn07kXHLBlLoolbDdtP05PCEixZLojqQ/exec";
+
+        const translations = {
+            en: {
+                welcome: "Welcome to Our<br>Wedding",
+                subtitle: "Share Your Favorite Moments",
+                introSubtitle: "SHARE YOUR FAVORITE MOMENTS",
+                introDesc: "Tap the button below to open our romantic moment",
+                introBtn: "Enter Wedding Memories",
+                tabBoth: "Upload & Gallery",
+                tabBlessing: "Blessing Wall",
+                uploadPhotosTitle: "Upload Photos",
+                nameLabel: "Your Name / Message (Optional)",
+                namePlaceholder: "e.g., Aunt Sarah & Uncle John",
+                tapToSelect: "Select photo source",
+                takePhotoBtn: "Take Photo",
+                selectGalleryBtn: "Gallery",
+                supportText: "Supports multiple images (JPG, PNG, HEIC)",
+                addMore: "Add More",
+                uploadBtn: "Upload Photos",
+                refresh: "Refresh",
+                refreshBlessings: "Refresh Wire",
+                galleryTitle: "Wedding Gallery",
+                loadingPhotos: "Loading photos...",
+                noPhotos: "No photos yet. Be the first to upload!",
+                blessingWallTitle: "Wedding Telegrams",
+                blessingNameLabel: "SENDER NAME / NICKNAME",
+                blessingNamePlaceholder: "e.g., Cousin May",
+                blessingTextLabel: "TELEGRAM MESSAGE",
+                blessingTextPlaceholder: "Wishing you a lifetime of love and happiness!",
+                sendBlessing: "TRANSMIT TELEGRAM",
+                wishesTitle: "RECEIVED TELEGRAMS",
+                loadingBlessings: "Connecting to telegraph line...",
+                noBlessings: "No telegrams yet. Transmit the first message!",
+                editModalTitle: "Edit My Blessing",
+                saveChanges: "Save Changes",
+                adminModalTitle: "Admin Dashboard",
+                adminLoginDesc: "Please enter admin password to unlock management features:",
+                adminPwdPlaceholder: "Enter password",
+                loginBtn: "Login",
+                openDrive: "Open Google Drive",
+                footerSystem: "Wedding Memory Sharing System",
+                langBtnText: "繁中",
+                deleteText: "Delete",
+                editText: "Edit",
+                sendingText: "⚡ TRANSMITTING TELEGRAM...",
+                uploadingText: "Uploading...",
+                clearAll: "Clear All",
+                retryBtn: "Load failed, tap to retry",
+                cancelUploadBtn: "Cancel",
+                batchAction: "Batch Action",
+                cancel: "Cancel",
+                downloadBtnText: "Download Photo",
+                shareBtnText: "Share Photo",
+                deleteSelected: "Delete",
+                downloadSelected: "Download",
+                shareSelected: "Share",
+                adminTabPhotos: "Photos",
+                adminTabBlessings: "Blessing",
+                selectAll: "Select All",
+                clearSelection: "Clear",
+                filterAll: "All",
+                filterMine: "Mine",
+                col1: "1", col2: "2", col3: "3", col4: "4",
+                focusAlbum: "Gallery View",
+                exitFocus: "Exit View",
+                shareSuccess: "Shared successfully!",
+                shareFailed: "Share cancelled or unsupported",
+                heicNotice: "HEIC photo detected, preparing...",
+                zoomHint: "Double tap or pinch to zoom",
+                uploadingWarning: "Uploading, please keep network connected and do not leave this page"
+            },
+            zh: {
+                welcome: "歡迎來到我們的<br>婚禮",
+                subtitle: "分享您的珍貴時刻",
+                introSubtitle: "分享婚禮現場精選時刻",
+                introDesc: "點擊下方按鈕，開啟我們的浪漫時刻",
+                introBtn: "進入婚禮回億",
+                tabBoth: "上傳與相簿",
+                tabBlessing: "祝福留言板",
+                uploadPhotosTitle: "上傳相片",
+                nameLabel: "您的姓名 / 留言 (選填)",
+                namePlaceholder: "例如：Sarah 姨媽 & John 叔叔",
+                tapToSelect: "選擇相片來源",
+                takePhotoBtn: "立即拍照",
+                selectGalleryBtn: "手機相簿",
+                supportText: "支援多張相片 (JPG, PNG, HEIC)",
+                addMore: "新增",
+                uploadBtn: "上傳相片",
+                refresh: "重新整理",
+                refreshBlessings: "重新整理電報線",
+                galleryTitle: "婚禮相簿",
+                loadingPhotos: "載入相片中...",
+                noPhotos: "暫時未有相片，快啲上傳第一張啦！",
+                blessingWallTitle: "古典祝福電報局",
+                blessingNameLabel: "發報人姓名 / 稱呼",
+                blessingNamePlaceholder: "例如：表姐 May",
+                blessingTextLabel: "電報內容",
+                blessingTextPlaceholder: "祝新婚快樂，琴瑟和鳴！",
+                sendBlessing: "發送祝福電報",
+                wishesTitle: "已收到之電報清單",
+                loadingBlessings: "電報線路連線中...",
+                noBlessings: "暫未收到電報，成為第一個發送電報嘅親友啦！",
+                editModalTitle: "修改我的祝福",
+                saveChanges: "儲存修改",
+                adminModalTitle: "新人專屬後台",
+                adminLoginDesc: "請輸入管理密碼以解鎖後台權限：",
+                adminPwdPlaceholder: "請輸入密碼",
+                loginBtn: "登入後台",
+                openDrive: "開啟 Google Drive 資料夾",
+                footerSystem: "婚禮回億分享系統",
+                langBtnText: "EN",
+                deleteText: "刪除",
+                editText: "修改",
+                sendingText: "⚡ 電報正在經電線傳輸中...",
+                uploadingText: "上傳中...",
+                clearAll: "清除全部",
+                retryBtn: "載入失敗，點擊重試",
+                cancelUploadBtn: "取消上傳",
+                batchAction: "批量操作",
+                cancel: "取消",
+                downloadBtnText: "下載相片",
+                shareBtnText: "分享相片",
+                deleteSelected: "刪除",
+                downloadSelected: "下載",
+                shareSelected: "分享",
+                adminTabPhotos: "相片",
+                adminTabBlessings: "祝福",
+                selectAll: "全選",
+                clearSelection: "清除",
+                filterAll: "全部",
+                filterMine: "我的",
+                col1: "1", col2: "2", col3: "3", col4: "4",
+                focusAlbum: "觀看相簿",
+                exitFocus: "返回",
+                shareSuccess: "分享成功！",
+                shareFailed: "分享已取消或不支援",
+                heicNotice: "已偵測到 HEIC 格式相片，正在自動處理...",
+                zoomHint: "雙擊或雙指縮放",
+                uploadingWarning: "上傳中，請保持網絡暢順並請勿離開此頁面"
+            }
+        };
+
+        let currentLang = localStorage.getItem('wedding_lang') || 'en';
+
+        function dismissIntro() {
+            const splash = document.getElementById('introSplash');
+            const mainContent = document.getElementById('mainContentWrapper');
+            
+            if (splash) {
+                splash.style.transition = 'opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1)';
+                splash.style.opacity = '0';
+                splash.style.pointerEvents = 'none';
+                
+                document.body.classList.remove('intro-active');
+
+                setTimeout(() => {
+                    if (mainContent) {
+                        mainContent.classList.add('visible');
+                    }
+                }, 1000);
+
+                setTimeout(() => {
+                    splash.remove();
+                }, 600);
+            }
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'zh' : 'en';
+            localStorage.setItem('wedding_lang', currentLang);
+
+            const elements = document.querySelectorAll('.lang-fade-effect');
+            elements.forEach(el => el.style.opacity = '0.2');
+
+            setTimeout(() => {
+                updateTexts();
+                elements.forEach(el => el.style.opacity = '1');
+            }, 180);
+        }
+
+        function showToast(message, type = 'success') {
+            let container = document.getElementById('toastContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toastContainer';
+                document.body.appendChild(container);
+            }
+            const toast = document.createElement('div');
+            toast.className = `toast-item ${type === 'error' ? 'border-red-500/30 bg-red-950/90' : ''}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.transition = 'opacity 0.35s cubic-bezier(0.25, 1, 0.5, 1), transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)';
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(8px) scale(0.95)';
+                setTimeout(() => toast.remove(), 350);
+            }, 2500);
+        }
+
+        function updateTexts() {
+            const dict = translations[currentLang];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[key]) {
+                    el.innerHTML = dict[key];
+                }
+            });
+
+            const blessingBtnText = document.getElementById('blessingBtnText');
+            if (blessingBtnText && !document.getElementById('blessingBtn').disabled) {
+                blessingBtnText.textContent = dict.sendBlessing;
+            }
+
+            const uploaderName = document.getElementById('uploaderName');
+            if (uploaderName) uploaderName.placeholder = dict.namePlaceholder;
+            const blessingName = document.getElementById('blessingName');
+            if (blessingName) blessingName.placeholder = dict.blessingNamePlaceholder;
+            const blessingText = document.getElementById('blessingText');
+            if (blessingText) blessingText.placeholder = dict.blessingTextPlaceholder;
+            const editBlessingName = document.getElementById('editBlessingName');
+            if (editBlessingName) editBlessingName.placeholder = dict.blessingNamePlaceholder;
+            const editBlessingText = document.getElementById('editBlessingText');
+            if (editBlessingText) editBlessingText.placeholder = dict.blessingNamePlaceholder;
+            const adminPwdInput = document.getElementById('adminPwdInput');
+            if (adminPwdInput) adminPwdInput.placeholder = dict.adminPwdPlaceholder;
+            
+            const introLangLabel = document.getElementById('introLangLabel');
+            if (introLangLabel) introLangLabel.textContent = dict.langBtnText;
+
+            const langLabel = document.getElementById('langLabel');
+            if (langLabel) langLabel.textContent = dict.langBtnText;
+            
+            if (typeof renderPendingPreviews === 'function') renderPendingPreviews();
+            loadGallery();
+            loadBlessings();
+        }
+
+        function handleNameInput(val) {
+            localStorage.setItem('wedding_user_name', val);
+            document.getElementById('uploaderName').value = val;
+            document.getElementById('blessingName').value = val;
+        }
+
+        function handleBlessingInput() {
+            const textEl = document.getElementById('blessingText');
+            const countEl = document.getElementById('blessingCharCount');
+            const len = textEl.value.length;
+            countEl.textContent = `${len}/150`;
+            if (len > 150) {
+                countEl.className = "typewriter-font text-[10px] text-red-400 font-bold";
+            } else {
+                countEl.className = "typewriter-font text-[10px] text-[#a89878]";
+            }
+            saveBlessingDraft();
+        }
+
+        function handleEditBlessingInput() {
+            const textEl = document.getElementById('editBlessingText');
+            const countEl = document.getElementById('editBlessingCharCount');
+            const len = textEl.value.length;
+            countEl.textContent = `${len}/150`;
+            if (len > 150) {
+                countEl.className = "text-[10px] text-red-500 font-bold";
+            } else {
+                countEl.className = "text-[10px] text-neutral-400";
+            }
+        }
+
+        function saveBlessingDraft() {
+            const text = document.getElementById('blessingText').value;
+            localStorage.setItem('wedding_blessing_draft', text);
+        }
+
+        let lastBackPressTime = 0;
+        window.history.pushState({ page: 'anti-exit-1' }, '', window.location.href);
+        window.history.pushState({ page: 'anti-exit-2' }, '', window.location.href);
+
+        window.addEventListener('DOMContentLoaded', () => {
+            window.addEventListener('popstate', (event) => {
+                const imageModal = document.getElementById('imageModal');
+                const editModal = document.getElementById('editBlessingModal');
+                const adminModal = document.getElementById('adminModal');
+
+                if (imageModal && !imageModal.classList.contains('hidden')) {
+                    closeModal();
+                    window.history.pushState({ page: 'anti-exit-2' }, '', window.location.href);
+                    return;
+                }
+                if (editModal && !editModal.classList.contains('hidden')) {
+                    closeEditModal();
+                    window.history.pushState({ page: 'anti-exit-2' }, '', window.location.href);
+                    return;
+                }
+                if (adminModal && !adminModal.classList.contains('hidden')) {
+                    closeAdminModal();
+                    window.history.pushState({ page: 'anti-exit-2' }, '', window.location.href);
+                    return;
+                }
+
+                const now = Date.now();
+                if (now - lastBackPressTime < 2000) {
+                    window.history.go(-2); 
+                } else {
+                    lastBackPressTime = now;
+                    showToast(currentLang === 'zh' ? '再按一次返回鍵即可離開網頁' : 'Press back again to exit');
+                    window.history.pushState({ page: 'anti-exit-1' }, '', window.location.href);
+                    window.history.pushState({ page: 'anti-exit-2' }, '', window.location.href);
+                }
+            });
+
+            const savedName = localStorage.getItem('wedding_user_name');
+            if (savedName) {
+                document.getElementById('uploaderName').value = savedName;
+                document.getElementById('blessingName').value = savedName;
+            }
+
+            const savedDraft = localStorage.getItem('wedding_blessing_draft');
+            if (savedDraft) {
+                const blessingTextEl = document.getElementById('blessingText');
+                if (blessingTextEl && !blessingTextEl.value) {
+                    blessingTextEl.value = savedDraft;
+                    handleBlessingInput();
+                }
+            }
+
+            window.addEventListener('scroll', () => {
+                if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 300) {
+                    const myTokens = getMyTokens();
+                    let filteredPhotos = allPhotosCache.filter(photo => {
+                        const isMyPhoto = photo.token && myTokens.includes(photo.token);
+                        if (currentFilterMode === 'mine') return isMyPhoto;
+                        return true;
+                    });
+                    if (currentDisplayedPhotosCount < filteredPhotos.length) {
+                        appendMorePhotos();
+                    }
+                }
+            });
+        });
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        window.addEventListener('scroll', () => {
+            const scrollBtn = document.getElementById('scrollToTopBtn');
+            if (scrollBtn) {
+                if (window.scrollY > 300) {
+                    scrollBtn.classList.remove('hidden');
+                } else {
+                    scrollBtn.classList.add('hidden');
+                }
+            }
+        });
+
+        const uploadForm = document.getElementById('uploadForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const spinner = document.getElementById('spinner');
+        const successCheck = document.getElementById('successCheck');
+        const statusMessage = document.getElementById('statusMessage');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const fileCount = document.getElementById('fileCount');
+
+        let pendingFiles = [];
+        let pendingObjectUrls = []; 
+        let uploadController = null;
+        let isUploadCancelled = false;
+
+        let isBatchActionMode = false;
+        let selectedBatchPhotoIds = new Set();
+        let photoTokenMap = {};
+        let activeTabMode = 'both'; 
+        let currentFilterMode = 'all';
+        let allPhotosCache = [];
+
+        let albumDensity = '3col';
+        let isFocusAlbum = false;
+
+        let currentDisplayedPhotosCount = 12;
+        const photosPerPage = 12;
+
+        function setFilterMode(mode) {
+            currentFilterMode = mode;
+            const filterPill = document.getElementById('filterSegmentPill');
+            const allBtn = document.getElementById('filterAllBtn');
+            const mineBtn = document.getElementById('filterMineBtn');
+
+            if (filterPill) {
+                filterPill.style.transform = mode === 'mine' ? 'translateX(100%)' : 'translateX(0%)';
+            }
+
+            if (mode === 'all') {
+                allBtn.className = "py-1 text-white font-semibold transition-colors duration-200 lang-fade-effect truncate px-1";
+                mineBtn.className = "py-1 text-neutral-600 hover:text-neutral-900 transition-colors duration-200 lang-fade-effect truncate px-1";
+            } else {
+                mineBtn.className = "py-1 text-white font-semibold transition-colors duration-200 lang-fade-effect truncate px-1";
+                allBtn.className = "py-1 text-neutral-600 hover:text-neutral-900 transition-colors duration-200 lang-fade-effect truncate px-1";
+            }
+
+            currentDisplayedPhotosCount = photosPerPage;
+            renderGalleryUI();
+        }
+
+        function setAlbumDensity(density) {
+            albumDensity = density;
+            const densityPill = document.getElementById('densitySegmentPill');
+            const btn1 = document.getElementById('density1ColBtn');
+            const btn2 = document.getElementById('density2ColBtn');
+            const btn3 = document.getElementById('density3ColBtn');
+            const btn4 = document.getElementById('density4ColBtn');
+            const btns = [btn1, btn2, btn3, btn4];
+
+            let index = 0;
+            if (density === '1col') index = 0;
+            else if (density === '2col') index = 1;
+            else if (density === '3col') index = 2;
+            else if (density === '4col') index = 3;
+
+            if (densityPill) {
+                densityPill.style.transform = `translateX(${index * 100}%)`;
+            }
+
+            btns.forEach((btn, idx) => {
+                if (idx === index) {
+                    btn.className = "py-1 text-white font-semibold transition-colors duration-200 lang-fade-effect";
+                } else {
+                    btn.className = "py-1 text-neutral-600 hover:text-neutral-900 transition-colors duration-200 lang-fade-effect";
+                }
+            });
+
+            currentDisplayedPhotosCount = photosPerPage;
+            renderGalleryUI();
+        }
+
+        function exitFocusAlbum(showMsg = false) {
+            if (!isFocusAlbum) return;
+            isFocusAlbum = false;
+            const uploadSec = document.getElementById('uploadSection');
+            const focusBtn = document.getElementById('focusAlbumBtn');
+            const dict = translations[currentLang];
+            if (uploadSec) uploadSec.classList.remove('hidden');
+            if (focusBtn) {
+                focusBtn.textContent = dict.focusAlbum;
+                focusBtn.className = "bg-white hover:bg-neutral-200 text-neutral-700 px-2 py-1.5 rounded-xl font-medium transition shadow-sm text-[10px] shrink-0 cursor-pointer";
+            }
+            if (showMsg) {
+                showToast(currentLang === 'zh' ? "✨ 已返回完整介面" : "Restored full interface");
+            }
+        }
+
+        function toggleFocusAlbum() {
+            if (isFocusAlbum) {
+                exitFocusAlbum(true);
+            } else {
+                isFocusAlbum = true;
+                const uploadSec = document.getElementById('uploadSection');
+                const focusBtn = document.getElementById('focusAlbumBtn');
+                const dict = translations[currentLang];
+                if (uploadSec) uploadSec.classList.add('hidden');
+                if (focusBtn) {
+                    focusBtn.textContent = dict.exitFocus;
+                    focusBtn.className = "bg-[#788a75] text-white px-2.5 py-1.5 rounded-xl font-medium transition shadow-sm text-[10px] shrink-0 cursor-pointer";
+                }
+                showToast(currentLang === 'zh' ? "🖼️ 已進入觀看相簿模式" : "Gallery view enabled");
+            }
+        }
+
+        function getMyTokens() {
+            let tokens = localStorage.getItem('my_wedding_tokens');
+            return tokens ? JSON.parse(tokens) : [];
+        }
+        function addMyToken(token) {
+            let tokens = getMyTokens();
+            tokens.push(token);
+            localStorage.setItem('my_wedding_tokens', JSON.stringify(tokens));
+        }
+        function removeMyToken(token) {
+            let tokens = getMyTokens();
+            tokens = tokens.filter(t => t !== token);
+            localStorage.setItem('my_wedding_tokens', JSON.stringify(tokens));
+        }
+
+        function getMyBlessingTokens() {
+            let tokens = localStorage.getItem('my_wedding_blessing_tokens');
+            return tokens ? JSON.parse(tokens) : {};
+        }
+        function saveMyBlessingToken(fileId, token) {
+            let tokens = getMyBlessingTokens();
+            tokens[fileId] = token;
+            localStorage.setItem('my_wedding_blessing_tokens', JSON.stringify(tokens));
+        }
+        function removeMyBlessingToken(fileId) {
+            let tokens = getMyBlessingTokens();
+            delete tokens[fileId];
+            localStorage.setItem('my_wedding_blessing_tokens', JSON.stringify(tokens));
+        }
+
+        function handleFileSelectInput(input) {
+            const files = Array.from(input.files);
+            let hasHeic = false;
+            files.forEach(file => {
+                if (file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic')) {
+                    hasHeic = true;
+                }
+                pendingFiles.push(file);
+            });
+            if (hasHeic) {
+                showToast(translations[currentLang].heicNotice);
+            }
+            input.value = '';
+            renderPendingPreviews();
+        }
+
+        function renderPendingPreviews() {
+            const placeholder = document.getElementById('dropZonePlaceholder');
+            const grid = document.getElementById('pendingPreviewGrid');
+            const dict = translations[currentLang];
+            
+            pendingObjectUrls.forEach(url => URL.revokeObjectURL(url));
+            pendingObjectUrls = [];
+
+            const cards = grid.querySelectorAll('.preview-card-item');
+            cards.forEach(c => c.remove());
+
+            if (pendingFiles.length > 0) {
+                let totalBytes = pendingFiles.reduce((acc, file) => acc + file.size, 0);
+                let sizeStr = totalBytes < 1024 * 1024 ? (totalBytes / 1024).toFixed(1) + " KB" : (totalBytes / (1024 * 1024)).toFixed(1) + " MB";
+
+                fileCount.innerHTML = `${pendingFiles.length} photo(s) selected (~${sizeStr}) <button type="button" onclick="clearAllPendingFiles()" class="ml-2 text-[10px] bg-red-100 hover:bg-red-200 text-red-600 px-2 py-0.5 rounded-md underline cursor-pointer">${dict.clearAll}</button>`;
+                fileCount.classList.remove('hidden');
+                
+                placeholder.classList.add('hidden');
+                grid.classList.remove('hidden');
+                
+                pendingFiles.forEach((file, index) => {
+                    const objectUrl = URL.createObjectURL(file);
+                    pendingObjectUrls.push(objectUrl);
+
+                    const div = document.createElement('div');
+                    div.className = "preview-card-item relative w-full pb-[100%] rounded-2xl overflow-hidden bg-neutral-200/60 shadow-sm border border-neutral-200/50 cursor-pointer group";
+                    div.onclick = () => openModalForPending(index);
+                    
+                    div.innerHTML = `
+                        <img src="${objectUrl}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        <button type="button" onclick="event.stopPropagation(); removePendingFile(${index})" class="absolute top-1.5 right-1.5 bg-black/60 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-[10px] shadow backdrop-blur-sm transition cursor-pointer">✕</button>
+                    `;
+                    grid.appendChild(div);
+                });
+            } else {
+                fileCount.classList.add('hidden');
+                grid.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+            }
+        }
+
+        function removePendingFile(index) {
+            if (pendingObjectUrls[index]) {
+                URL.revokeObjectURL(pendingObjectUrls[index]);
+                pendingObjectUrls.splice(index, 1);
+            }
+            pendingFiles.splice(index, 1);
+            renderPendingPreviews();
+        }
+
+        function clearAllPendingFiles() {
+            pendingObjectUrls.forEach(url => URL.revokeObjectURL(url));
+            pendingObjectUrls = [];
+            pendingFiles = [];
+            renderPendingPreviews();
+        }
+
+        function switchMode(mode) {
+            if (activeTabMode === mode) {
+                if (mode === 'both' && isFocusAlbum) {
+                    exitFocusAlbum(true);
+                }
+                return;
+            }
+            activeTabMode = mode;
+
+            exitFocusAlbum(false);
+
+            const pill = document.getElementById('navSegmentPill');
+            const btnBoth = document.getElementById('btnBoth');
+            const btnBlessing = document.getElementById('btnBlessing');
+            const contentContainer = document.getElementById('tabContentContainer');
+
+            if (pill) {
+                pill.style.transform = mode === 'blessing' ? 'translateX(100%)' : 'translateX(0%)';
+            }
+
+            if (mode === 'both') {
+                btnBoth.className = "py-2.5 px-3 rounded-[1.5rem] text-center transition-colors duration-200 text-white font-semibold lang-fade-effect cursor-pointer";
+                btnBlessing.className = "py-2.5 px-3 rounded-[1.5rem] text-center transition-colors duration-200 text-neutral-600 hover:text-neutral-900 lang-fade-effect cursor-pointer";
+            } else {
+                btnBlessing.className = "py-2.5 px-3 rounded-[1.5rem] text-center transition-colors duration-200 text-white font-semibold lang-fade-effect cursor-pointer";
+                btnBoth.className = "py-2.5 px-3 rounded-[1.5rem] text-center transition-colors duration-200 text-neutral-600 hover:text-neutral-900 lang-fade-effect cursor-pointer";
+            }
+
+            exitBatchActionMode();
+            currentDisplayedPhotosCount = photosPerPage;
+
+            contentContainer.classList.add('tab-animating-out');
+
+            setTimeout(() => {
+                const uploadSec = document.getElementById('uploadSection');
+                const albumSec = document.getElementById('albumSection');
+                const blessingSec = document.getElementById('blessingSection');
+
+                if (mode === 'both') {
+                    uploadSec.classList.remove('hidden');
+                    albumSec.classList.remove('hidden');
+                    blessingSec.classList.add('hidden');
+                    loadGallery();
+                } else if (mode === 'blessing') {
+                    uploadSec.classList.add('hidden');
+                    albumSec.classList.add('hidden');
+                    blessingSec.classList.remove('hidden');
+                    loadBlessings();
+                }
+
+                contentContainer.classList.remove('tab-animating-out');
+                contentContainer.classList.add('tab-animating-in');
+                setTimeout(() => {
+                    contentContainer.classList.remove('tab-animating-in');
+                }, 50);
+            }, 150);
+        }
+
+        function compressImage(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        const MAX_DIMENSION = 1280;
+                        if (width > height) {
+                            if (width > MAX_DIMENSION) { height *= MAX_DIMENSION / width; width = MAX_DIMENSION; }
+                        } else {
+                            if (height > MAX_DIMENSION) { width *= MAX_DIMENSION / height; height = MAX_DIMENSION; }
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        let quality = 0.75;
+                        let dataUrl = canvas.toDataURL('image/jpeg', quality);
+                        
+                        while (dataUrl.length > 700000 && quality > 0.3) {
+                            quality -= 0.1;
+                            dataUrl = canvas.toDataURL('image/jpeg', quality);
+                        }
+                        
+                        resolve(dataUrl);
+                    };
+                    img.onerror = (error) => reject(error);
+                };
+                reader.onerror = (error) => reject(error);
+            });
+        }
+
+        async function cancelUpload() {
+            isUploadCancelled = true;
+            if (uploadController) uploadController.abort();
+            
+            progressContainer.classList.add('hidden');
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('morphing');
+            btnText.classList.remove('hidden');
+            spinner.classList.add('hidden');
+            successCheck.classList.add('hidden');
+            
+            statusMessage.textContent = currentLang === 'zh' ? "❌ 已取消上傳。" : "❌ Upload cancelled.";
+            statusMessage.className = "mt-3 text-center text-xs text-neutral-500 font-medium";
+            statusMessage.classList.remove('hidden');
+            setTimeout(() => statusMessage.classList.add('hidden'), 2500);
+            loadGallery();
+        }
+
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('uploaderName').value;
+
+            if (pendingFiles.length === 0) {
+                showToast(currentLang === 'zh' ? '請先選擇至少一張相片！' : 'Please select at least one photo!', 'error');
+                return;
+            }
+
+            uploadController = new AbortController();
+            isUploadCancelled = false;
+
+            submitBtn.disabled = true;
+            submitBtn.classList.add('morphing');
+            btnText.classList.add('hidden');
+            spinner.classList.remove('hidden');
+            progressContainer.classList.remove('hidden');
+            statusMessage.classList.add('hidden');
+
+            const totalFiles = pendingFiles.length;
+
+            try {
+                for (let i = 0; i < totalFiles; i++) {
+                    if (isUploadCancelled) break;
+
+                    const file = pendingFiles[i];
+                    const percent = Math.round((i / totalFiles) * 100);
+                    
+                    progressText.innerHTML = `${currentLang === 'zh' ? `上傳中 (${i + 1}/${totalFiles})` : `Uploading (${i + 1}/${totalFiles})`} <span class="text-[10px] text-neutral-400 font-mono block truncate max-w-[180px]">${file.name}</span>`;
+                    progressBar.style.width = `${percent}%`;
+
+                    try {
+                        const compressedBase64 = await compressImage(file);
+                        if (isUploadCancelled) break;
+
+                        const uniqueToken = 'tk_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+                        addMyToken(uniqueToken);
+
+                        const payload = { type: "photo", name: name, filename: file.name, fileData: compressedBase64, token: uniqueToken };
+
+                        await fetch(APPS_SCRIPT_URL, {
+                            method: 'POST',
+                            mode: 'no-cors',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload),
+                            signal: uploadController.signal
+                        });
+                    } catch (fileErr) {
+                        if (fileErr.name === 'AbortError') break;
+                    }
+                }
+
+                if (!isUploadCancelled) {
+                    progressText.textContent = currentLang === 'zh' ? `上傳完成！` : `Upload completed!`;
+                    progressBar.style.width = `100%`;
+
+                    spinner.classList.add('hidden');
+                    successCheck.classList.remove('hidden');
+                    submitBtn.style.backgroundColor = '#788a75';
+
+                    showToast(currentLang === 'zh' ? "✨ 上傳成功！多謝你的祝福！" : "✨ Upload successful! Thank you!");
+                    
+                    pendingObjectUrls.forEach(url => URL.revokeObjectURL(url));
+                    pendingObjectUrls = [];
+                    pendingFiles = [];
+                    renderPendingPreviews();
+                    uploadForm.reset();
+
+                    const savedName = localStorage.getItem('wedding_user_name');
+                    if (savedName) document.getElementById('uploaderName').value = savedName;
+
+                    setTimeout(() => {
+                        progressContainer.classList.add('hidden');
+                        submitBtn.classList.remove('morphing');
+                        successCheck.classList.add('hidden');
+                        btnText.classList.remove('hidden');
+                        submitBtn.style.backgroundColor = '';
+                        submitBtn.disabled = false;
+                    }, 1800);
+
+                    setTimeout(loadGallery, 2000);
+                }
+
+            } catch (error) {
+                if (error.name === 'AbortError') return;
+                showToast(currentLang === 'zh' ? "❌ 上傳失敗，請檢查網絡連接。" : "❌ Upload failed, please check connection.", 'error');
+                progressContainer.classList.add('hidden');
+                submitBtn.classList.remove('morphing');
+                spinner.classList.add('hidden');
+                btnText.classList.remove('hidden');
+                submitBtn.disabled = false;
+            }
+        });
+
+        function toggleBatchActionMode() {
+            isBatchActionMode = !isBatchActionMode;
+            selectedBatchPhotoIds.clear();
+            const toolbar = document.getElementById('batchActionToolbar');
+            if (toolbar) {
+                if (isBatchActionMode) {
+                    toolbar.classList.remove('hidden');
+                    toolbar.classList.add('floating-bottom');
+                } else {
+                    toolbar.classList.add('hidden');
+                    toolbar.classList.remove('floating-bottom');
+                }
+            }
+            const toggleBtn = document.getElementById('batchActionToggleBtn');
+            if (toggleBtn) {
+                const dict = translations[currentLang];
+                toggleBtn.textContent = isBatchActionMode ? dict.cancel : dict.batchAction;
+                toggleBtn.className = isBatchActionMode ? "text-xs bg-neutral-200 text-neutral-800 px-3 py-1 rounded-xl transition font-medium cursor-pointer" : "text-xs text-[#788a75] underline font-medium cursor-pointer";
+            }
+            renderGalleryUI();
+        }
+
+        function exitBatchActionMode() {
+            isBatchActionMode = false;
+            selectedBatchPhotoIds.clear();
+            const toolbar = document.getElementById('batchActionToolbar');
+            if (toolbar) {
+                toolbar.classList.add('hidden');
+                toolbar.classList.remove('floating-bottom');
+            }
+            const toggleBtn = document.getElementById('batchActionToggleBtn');
+            if (toggleBtn) {
+                const dict = translations[currentLang];
+                toggleBtn.textContent = dict.batchAction;
+                toggleBtn.className = "text-xs text-[#788a75] underline font-medium cursor-pointer";
+            }
+        }
+
+        function toggleBatchPhotoSelection(photoId, event) {
+            event.stopPropagation();
+            if (selectedBatchPhotoIds.has(photoId)) selectedBatchPhotoIds.delete(photoId);
+            else selectedBatchPhotoIds.add(photoId);
+            updateBatchActionToolbarUI();
+            
+            const card = document.getElementById(`card_${photoId}`);
+            const checkbox = document.getElementById(`chk_dl_${photoId}`);
+            if (card && checkbox) {
+                const isSelected = selectedBatchPhotoIds.has(photoId);
+                checkbox.checked = isSelected;
+                card.classList.toggle('ring-4', isSelected);
+                card.classList.toggle('ring-[#788a75]', isSelected);
+            }
+        }
+
+        function selectAllGalleryPhotos(select) {
+            selectedBatchPhotoIds.clear();
+            if (select) {
+                allPhotosCache.forEach(photo => {
+                    const isMyPhoto = photo.token && getMyTokens().includes(photo.token);
+                    if (currentFilterMode === 'mine' && !isMyPhoto) return;
+                    selectedBatchPhotoIds.add(photo.id);
+                });
+            }
+            renderGalleryUI();
+            updateBatchActionToolbarUI();
+        }
+
+        function updateBatchActionToolbarUI() {
+            const countEl = document.getElementById('selectedBatchCountText');
+            const downloadBtn = document.getElementById('batchDownloadBtn');
+            const shareBtn = document.getElementById('batchShareBtn');
+            const deleteBtn = document.getElementById('batchDeleteBtn');
+            const count = selectedBatchPhotoIds.size;
+            if (countEl) countEl.textContent = currentLang === 'zh' ? `已選取 ${count} 張相片` : `${count} photo(s) selected`;
+            
+            const activeStyle = "bg-[#788a75] hover:bg-[#687a65] text-white text-xs py-3 rounded-2xl shadow transition font-medium cursor-pointer";
+            const deleteActiveStyle = "bg-red-600 hover:bg-red-700 text-white text-xs py-3 rounded-2xl shadow transition font-medium cursor-pointer flex items-center justify-center relative overflow-hidden";
+            const disabledStyle = "bg-neutral-300 text-neutral-500 text-xs py-3 rounded-2xl cursor-not-allowed font-medium transition flex items-center justify-center relative overflow-hidden";
+
+            if (downloadBtn) {
+                downloadBtn.disabled = count === 0;
+                downloadBtn.className = count > 0 ? activeStyle : "bg-neutral-300 text-neutral-500 text-xs py-3 rounded-2xl cursor-not-allowed font-medium transition shadow-sm flex items-center justify-center";
+            }
+            if (shareBtn) {
+                shareBtn.disabled = count === 0;
+                shareBtn.className = count > 0 ? activeStyle : "bg-neutral-300 text-neutral-500 text-xs py-3 rounded-2xl cursor-not-allowed font-medium transition shadow-sm flex items-center justify-center";
+            }
+
+            const myTokens = getMyTokens();
+            let allAreMine = count > 0;
+            selectedBatchPhotoIds.forEach(id => {
+                const token = photoTokenMap[id];
+                if (!token || !myTokens.includes(token)) {
+                    allAreMine = false;
+                }
+            });
+
+            if (deleteBtn) {
+                deleteBtn.disabled = !allAreMine;
+                deleteBtn.className = allAreMine ? deleteActiveStyle : disabledStyle;
+            }
+        }
+
+        async function executeBatchDownload() {
+            if (selectedBatchPhotoIds.size === 0) return;
+            const confirmMsg = currentLang === 'zh' ? `確定要下載選中的 ${selectedBatchPhotoIds.size} 張相片嗎？` : `Are you sure you want to download ${selectedBatchPhotoIds.size} selected photo(s)?`;
+            if (!confirm(confirmMsg)) return;
+
+            const selectedPhotos = allPhotosCache.filter(p => selectedBatchPhotoIds.has(p.id));
+            showToast(currentLang === 'zh' ? `開始下載 ${selectedPhotos.length} 張相片...` : `Starting download of ${selectedPhotos.length} photo(s)...`);
+
+            for (let i = 0; i < selectedPhotos.length; i++) {
+                const p = selectedPhotos[i];
+                try {
+                    const response = await fetch(p.url);
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = p.name || `wedding_photo_${i + 1}.jpg`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    await new Promise(r => setTimeout(r, 400));
+                } catch (e) {}
+            }
+            showToast(currentLang === 'zh' ? `✨ 成功完成 ${selectedPhotos.length} 張相片下載！` : `✨ Successfully downloaded ${selectedPhotos.length} photo(s)!`);
+        }
+
+        async function executeBatchShare() {
+            if (selectedBatchPhotoIds.size === 0) return;
+            const selectedPhotos = allPhotosCache.filter(p => selectedBatchPhotoIds.has(p.id));
+
+            if (!navigator.share) {
+                showToast(currentLang === 'zh' ? '您的瀏覽器不支援批量分享功能' : 'Browser does not support sharing', 'error');
+                return;
+            }
+
+            showToast(currentLang === 'zh' ? `正在準備分享 ${selectedPhotos.length} 張相片...` : `Preparing ${selectedPhotos.length} photo(s) to share...`);
+
+            try {
+                let filesArray = [];
+                for (let i = 0; i < selectedPhotos.length; i++) {
+                    const p = selectedPhotos[i];
+                    const response = await fetch(p.url);
+                    const blob = await response.blob();
+                    const file = new File([blob], p.name || `wedding_photo_${i + 1}.jpg`, { type: blob.type });
+                    filesArray.push(file);
+                }
+
+                if (navigator.canShare && navigator.canShare({ files: filesArray })) {
+                    await navigator.share({
+                        title: 'Wedding Photos',
+                        text: currentLang === 'zh' ? '分享婚禮現場精選相片 🌸' : 'Check out these wonderful wedding photos!',
+                        files: filesArray
+                    });
+                    showToast(currentLang === 'zh' ? '批量分享成功！' : 'Batch share successful!');
+                } else {
+                    showToast(currentLang === 'zh' ? '瀏覽器不支援批量檔案分享' : 'Browser does not support multi-file share', 'error');
+                }
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    showToast(currentLang === 'zh' ? '批量分享已取消或失敗' : 'Share cancelled or failed', 'error');
+                }
+            }
+        }
+
+        async function executeBatchDelete() {
+            if (selectedBatchPhotoIds.size === 0) return;
+            const total = selectedBatchPhotoIds.size;
+            const confirmMsg = currentLang === 'zh' ? `確定要刪除選中的 ${total} 張相片嗎？` : `Are you sure you want to delete ${total} selected photo(s)?`;
+            if (!confirm(confirmMsg)) return;
+
+            const deleteBtn = document.getElementById('batchDeleteBtn');
+            const btnText = document.getElementById('batchDeleteBtnText');
+            const spinner = document.getElementById('batchDeleteSpinner');
+            const check = document.getElementById('batchDeleteCheck');
+
+            deleteBtn.disabled = true;
+            deleteBtn.classList.add('morphing');
+            btnText.classList.add('hidden');
+            spinner.classList.remove('hidden');
+
+            const myTokens = getMyTokens();
+            let successCount = 0;
+            let current = 0;
+            
+            for (const photoId of selectedBatchPhotoIds) {
+                current++;
+                showToast(currentLang === 'zh' ? `正在刪除相片 (${current}/${total})...` : `Deleting photo (${current}/${total})...`);
+                const token = photoTokenMap[photoId] || "";
+                try {
+                    const res = await fetch(`${APPS_SCRIPT_URL}?action=deleteFile&fileId=${photoId}&token=${token}`);
+                    const data = await res.json();
+                    if (data.status === "success") {
+                        removeMyToken(token);
+                        successCount++;
+                    }
+                } catch(e) {}
+            }
+
+            spinner.classList.add('hidden');
+            check.classList.remove('hidden');
+            deleteBtn.style.backgroundColor = '#788a75';
+
+            showToast(currentLang === 'zh' ? `成功刪除 ${successCount} 張相片！` : `Successfully deleted ${successCount} photo(s)!`);
+            
+            setTimeout(() => {
+                deleteBtn.classList.remove('morphing');
+                check.classList.add('hidden');
+                btnText.classList.remove('hidden');
+                deleteBtn.style.backgroundColor = '';
+                deleteBtn.disabled = false;
+                exitBatchActionMode();
+                loadGallery();
+            }, 1500);
+        }
+
+        async function downloadCurrentModalImage(e) {
+            if (e) e.stopPropagation();
+            if (modalPhotosList.length === 0) return;
+            
+            const currentPhoto = modalPhotosList[modalCurrentIdx];
+            if (currentPhoto.isPending) {
+                showToast(currentLang === 'zh' ? '這張是暫存相片，請上傳後下載' : 'Pending photo, upload first to download', 'error');
+                return;
+            }
+
+            const confirmMsg = currentLang === 'zh' ? '確定要下載此相片嗎？' : 'Are you sure you want to download this photo?';
+            if (!confirm(confirmMsg)) return;
+
+            try {
+                const response = await fetch(currentPhoto.url);
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = currentPhoto.name || `wedding_photo_${modalCurrentIdx + 1}.jpg`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                showToast(currentLang === 'zh' ? '相片下載成功！' : 'Photo downloaded successfully!');
+            } catch (err) {
+                showToast(currentLang === 'zh' ? '下載失敗，請長按圖片儲存' : 'Download failed, please long press', 'error');
+            }
+        }
+
+        async function shareCurrentModalImage(e) {
+            if (e) e.stopPropagation();
+            if (modalPhotosList.length === 0) return;
+            const currentPhoto = modalPhotosList[modalCurrentIdx];
+            const dict = translations[currentLang];
+
+            if (currentPhoto.isPending) {
+                showToast(currentLang === 'zh' ? '這張是暫存相片，請上傳後分享' : 'Pending photo, upload first to share', 'error');
+                return;
+            }
+
+            if (navigator.share) {
+                try {
+                    const response = await fetch(currentPhoto.url);
+                    const blob = await response.blob();
+                    const file = new File([blob], currentPhoto.name || 'wedding_photo.jpg', { type: blob.type });
+
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            title: 'Wedding Photo',
+                            text: currentLang === 'zh' ? '分享婚禮現場精選時刻 🌸' : 'Check out this wonderful moment!',
+                            files: [file]
+                        });
+                    } else {
+                        await navigator.share({
+                            title: 'Wedding Photo',
+                            text: currentLang === 'zh' ? '分享婚禮現場精選時刻 🌸' : 'Check out this wonderful moment!',
+                            url: currentPhoto.url
+                        });
+                    }
+                    showToast(dict.shareSuccess);
+                } catch (err) {
+                    if (err.name !== 'AbortError') {
+                        showToast(dict.shareFailed, 'error');
+                    }
+                }
+            } else {
+                showToast(currentLang === 'zh' ? '您的瀏覽器不支援直接分享功能' : 'Browser does not support sharing', 'error');
+            }
+        }
+
+        async function loadGallery() {
+            const container = document.getElementById('galleryContainer');
+            const dict = translations[currentLang];
+            container.innerHTML = `<p class="col-span-full text-center text-xs text-neutral-400 py-6">${dict.loadingPhotos}</p>`;
+
+            try {
+                const res = await fetch(`${APPS_SCRIPT_URL}?action=getPhotos`);
+                const data = await res.json();
+                if (data.status === "success") {
+                    allPhotosCache = data.photos || [];
+                    currentDisplayedPhotosCount = photosPerPage;
+                    renderGalleryUI();
+                } else {
+                    allPhotosCache = [];
+                    renderGalleryUI();
+                }
+            } catch (err) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-6">
+                        <button onclick="loadGallery()" class="text-xs text-[#c89f91] font-medium bg-white px-5 py-2.5 rounded-2xl shadow-sm border border-neutral-200 hover:bg-neutral-50 transition cursor-pointer">
+                            ${dict.retryBtn}
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function renderGalleryUI() {
+            const container = document.getElementById('galleryContainer');
+            const badgeEl = document.getElementById('photoCountBadge');
+            const dict = translations[currentLang];
+            const myTokens = getMyTokens();
+            photoTokenMap = {};
+
+            let filteredPhotos = allPhotosCache.filter(photo => {
+                const isMyPhoto = photo.token && myTokens.includes(photo.token);
+                if (currentFilterMode === 'mine') return isMyPhoto;
+                return true;
+            });
+
+            if (badgeEl) badgeEl.textContent = `${filteredPhotos.length} photo(s)`;
+
+            if (filteredPhotos.length === 0) {
+                container.className = "ios-scroll grid grid-cols-1 gap-3.5 min-h-[150px]";
+                container.innerHTML = `<p class="col-span-full text-center text-xs text-neutral-400 py-6">${dict.noPhotos}</p>`;
+                return;
+            }
+
+            let visiblePhotos = filteredPhotos.slice(0, currentDisplayedPhotosCount);
+            container.innerHTML = "";
+            
+            let gridColsClass = '';
+            if (albumDensity === '1col') gridColsClass = 'grid grid-cols-1 gap-4 max-w-sm mx-auto';
+            else if (albumDensity === '2col') gridColsClass = 'grid grid-cols-2 gap-3.5';
+            else if (albumDensity === '3col') gridColsClass = 'grid grid-cols-3 gap-3';
+            else if (albumDensity === '4col') gridColsClass = 'grid grid-cols-4 gap-2';
+            else gridColsClass = 'grid grid-cols-3 gap-3';
+
+            container.className = `ios-scroll ${gridColsClass}`;
+
+            visiblePhotos.forEach((photo, index) => {
+                const isMyPhoto = photo.token && myTokens.includes(photo.token);
+                photoTokenMap[photo.id] = photo.token;
+                const isBatchSelected = selectedBatchPhotoIds.has(photo.id);
+
+                const imgBox = document.createElement('div');
+                imgBox.id = `card_${photo.id}`;
+                imgBox.className = `relative w-full pb-[100%] rounded-2xl overflow-hidden bg-neutral-100 shadow-sm group cursor-pointer transition ${isBatchSelected ? 'ring-4 ring-[#788a75]' : ''}`;
+                
+                let html = `<img src="${photo.url}" class="absolute inset-0 w-full h-full object-cover hover:scale-105 transition duration-300" loading="lazy" alt="Wedding Photo">`;
+
+                if (isBatchActionMode) {
+                    html += `
+                        <div class="absolute inset-0 bg-black/25 flex items-start p-2.5" onclick="toggleBatchPhotoSelection('${photo.id}', event)">
+                            <input type="checkbox" id="chk_dl_${photo.id}" ${isBatchSelected ? 'checked' : ''} onclick="toggleBatchPhotoSelection('${photo.id}', event)" class="w-5 h-5 accent-[#788a75] rounded cursor-pointer pointer-events-auto shadow">
+                        </div>
+                    `;
+                    imgBox.onclick = (e) => toggleBatchPhotoSelection(photo.id, e);
+                } else {
+                    imgBox.onclick = () => openModalByPhoto(filteredPhotos, index);
+                    if (isMyPhoto) {
+                        html += `<button onclick="event.stopPropagation(); deleteFile('${photo.id}', '${photo.token}')" class="absolute top-2.5 right-2.5 bg-red-600/85 hover:bg-red-700 text-white text-[10px] px-2.5 py-1 rounded-xl backdrop-blur-md shadow transition flex items-center gap-1 z-10 cursor-pointer">${dict.deleteText}</button>`;
+                    }
+                }
+
+                imgBox.innerHTML = html;
+                container.appendChild(imgBox);
+            });
+
+            updateBatchActionToolbarUI();
+        }
+
+        function appendMorePhotos() {
+            const container = document.getElementById('galleryContainer');
+            const myTokens = getMyTokens();
+            const dict = translations[currentLang];
+
+            let filteredPhotos = allPhotosCache.filter(photo => {
+                const isMyPhoto = photo.token && myTokens.includes(photo.token);
+                if (currentFilterMode === 'mine') return isMyPhoto;
+                return true;
+            });
+
+            let startIndex = currentDisplayedPhotosCount;
+            currentDisplayedPhotosCount += photosPerPage;
+            let nextBatch = filteredPhotos.slice(startIndex, currentDisplayedPhotosCount);
+
+            if (nextBatch.length === 0) return;
+
+            nextBatch.forEach((photo, batchIndex) => {
+                const absoluteIndex = startIndex + batchIndex;
+                const isMyPhoto = photo.token && myTokens.includes(photo.token);
+                photoTokenMap[photo.id] = photo.token;
+                const isBatchSelected = selectedBatchPhotoIds.has(photo.id);
+
+                const imgBox = document.createElement('div');
+                imgBox.id = `card_${photo.id}`;
+                imgBox.className = `relative w-full pb-[100%] rounded-2xl overflow-hidden bg-neutral-100 shadow-sm group cursor-pointer transition ${isBatchSelected ? 'ring-4 ring-[#788a75]' : ''}`;
+                
+                let html = `<img src="${photo.url}" class="absolute inset-0 w-full h-full object-cover hover:scale-105 transition duration-300" loading="lazy" alt="Wedding Photo">`;
+
+                if (isBatchActionMode) {
+                    html += `
+                        <div class="absolute inset-0 bg-black/25 flex items-start p-2.5" onclick="toggleBatchPhotoSelection('${photo.id}', event)">
+                            <input type="checkbox" id="chk_dl_${photo.id}" ${isBatchSelected ? 'checked' : ''} onclick="toggleBatchPhotoSelection('${photo.id}', event)" class="w-5 h-5 accent-[#788a75] rounded cursor-pointer pointer-events-auto shadow">
+                        </div>
+                    `;
+                    imgBox.onclick = (e) => toggleBatchPhotoSelection(photo.id, e);
+                } else {
+                    imgBox.onclick = () => openModalByPhoto(filteredPhotos, absoluteIndex);
+                    if (isMyPhoto) {
+                        html += `<button onclick="event.stopPropagation(); deleteFile('${photo.id}', '${photo.token}')" class="absolute top-2.5 right-2.5 bg-red-600/85 hover:bg-red-700 text-white text-[10px] px-2.5 py-1 rounded-xl backdrop-blur-md shadow transition flex items-center gap-1 z-10 cursor-pointer">${dict.deleteText}</button>`;
+                    }
+                }
+
+                imgBox.innerHTML = html;
+                container.appendChild(imgBox);
+            });
+        }
+
+        let modalPhotosList = [];
+        let modalCurrentIdx = 0;
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchCurrentX = 0;
+        let touchCurrentY = 0;
+        let isDragging = false;
+        let currentScale = 1;
+        let panX = 0;
+        let panY = 0;
+        let startPanX = 0;
+        let startPanY = 0;
+        let trackOffset = 0;
+        let verticalOffset = 0; 
+        let startTrackOffset = 0;
+        let startVerticalOffset = 0;
+        let lastTapTime = 0;
+        let gestureDirection = null;
+
+        let activePointers = new Map();
+        let initialPinchDistance = 0;
+        let baseScaleForPinch = 1;
+        let initialMidX = 0;
+        let initialMidY = 0;
+
+        function openModalForPending(index) {
+            modalPhotosList = pendingObjectUrls.map(url => ({ url: url, isPending: true }));
+            modalCurrentIdx = index;
+            currentScale = 1;
+            panX = 0;
+            panY = 0;
+            trackOffset = 0;
+            verticalOffset = 0;
+            gestureDirection = null;
+            activePointers.clear();
+            updateModalImages();
+            
+            const modal = document.getElementById('imageModal');
+            modal.classList.remove('hidden');
+
+            const actionBtns = document.getElementById('modalActionButtons');
+            if (actionBtns) actionBtns.style.display = 'none';
+
+            const zoomHint = document.getElementById('zoomHintEl');
+            if (zoomHint) {
+                zoomHint.style.opacity = '1';
+                setTimeout(() => { zoomHint.style.opacity = '0'; }, 2000);
+            }
+
+            const imgEl = document.getElementById('modalImg');
+            imgEl.onclick = handleDoubleTap;
+
+            const wrapper = document.getElementById('modalContentWrapper');
+            wrapper.onpointerdown = pointerStart;
+            wrapper.onpointermove = pointerMove;
+            wrapper.onpointerup = pointerEnd;
+            wrapper.onpointercancel = pointerEnd;
+        }
+
+        function openModalByPhoto(photoList, index) {
+            modalPhotosList = photoList;
+            modalCurrentIdx = index;
+            currentScale = 1;
+            panX = 0;
+            panY = 0;
+            trackOffset = 0;
+            verticalOffset = 0;
+            gestureDirection = null;
+            activePointers.clear();
+            updateModalImages();
+            const modal = document.getElementById('imageModal');
+            modal.classList.remove('hidden');
+
+            const actionBtns = document.getElementById('modalActionButtons');
+            if (actionBtns) actionBtns.style.display = 'flex';
+
+            const zoomHint = document.getElementById('zoomHintEl');
+            if (zoomHint) {
+                zoomHint.style.opacity = '1';
+                setTimeout(() => {
+                    zoomHint.style.opacity = '0';
+                }, 2000);
+            }
+
+            const imgEl = document.getElementById('modalImg');
+            imgEl.onclick = handleDoubleTap;
+
+            const wrapper = document.getElementById('modalContentWrapper');
+            wrapper.onpointerdown = pointerStart;
+            wrapper.onpointermove = pointerMove;
+            wrapper.onpointerup = pointerEnd;
+            wrapper.onpointercancel = pointerEnd;
+        }
+
+        function handleDoubleTap(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const now = Date.now();
+            const imgEl = document.getElementById('modalImg');
+            if (now - lastTapTime < 250) {
+                currentScale = currentScale === 1 ? 2.5 : 1;
+                if (currentScale === 1) {
+                    panX = 0;
+                    panY = 0;
+                    verticalOffset = 0;
+                }
+                imgEl.style.transition = 'transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                imgEl.style.transform = `translate(${panX}px, ${panY + verticalOffset}px) scale(${currentScale})`;
+                setTimeout(() => { imgEl.style.transition = 'none'; }, 350);
+            }
+            lastTapTime = now;
+        }
+
+        let preloadCache = new Map();
+        function preloadAdjacentImages() {
+            if (modalPhotosList.length <= 1) return;
+            const len = modalPhotosList.length;
+            const prevIdx = (modalCurrentIdx - 1 + len) % len;
+            const nextIdx = (modalCurrentIdx + 1) % len;
+
+            [prevIdx, nextIdx].forEach(idx => {
+                const url = modalPhotosList[idx].url;
+                if (!preloadCache.has(url)) {
+                    const img = new Image();
+                    img.src = url;
+                    preloadCache.set(url, img);
+                    if (preloadCache.size > 10) {
+                        const firstKey = preloadCache.keys().next().value;
+                        preloadCache.delete(firstKey);
+                    }
+                }
+            });
+        }
+
+        function updateModalImages() {
+            if (modalPhotosList.length === 0) return;
+            const len = modalPhotosList.length;
+            const prevIdx = (modalCurrentIdx - 1 + len) % len;
+            const nextIdx = (modalCurrentIdx + 1) % len;
+
+            document.getElementById('modalImgPrev').src = modalPhotosList[prevIdx].url;
+            
+            const imgEl = document.getElementById('modalImg');
+            imgEl.style.opacity = '0.3';
+            imgEl.src = modalPhotosList[modalCurrentIdx].url;
+            imgEl.onload = () => { imgEl.style.opacity = '1'; };
+
+            document.getElementById('modalImgNext').src = modalPhotosList[nextIdx].url;
+
+            const indicator = document.getElementById('modalImageIndicator');
+            if (indicator) indicator.textContent = `${modalCurrentIdx + 1} / ${len}`;
+
+            currentScale = 1;
+            panX = 0;
+            panY = 0;
+            trackOffset = 0;
+            verticalOffset = 0;
+            gestureDirection = null;
+            activePointers.clear();
+
+            if (imgEl) {
+                imgEl.style.transition = 'none';
+                imgEl.style.transform = 'translate(0px, 0px) scale(1)';
+            }
+
+            const slidePrev = document.getElementById('modalSlidePrev');
+            const slideCurrent = document.getElementById('modalSlideCurrent');
+            const slideNext = document.getElementById('modalSlideNext');
+
+            [slidePrev, slideCurrent, slideNext].forEach(el => {
+                if (el) el.style.transition = 'none';
+            });
+
+            slidePrev.style.transform = 'translateX(-100%)';
+            slideCurrent.style.transform = 'translateX(0%) translateY(0px) scale(1)';
+            slideNext.style.transform = 'translateX(100%)';
+
+            preloadAdjacentImages();
+        }
+
+        function nextModalImage(e) {
+            if (e) e.stopPropagation();
+            const slideCurrent = document.getElementById('modalSlideCurrent');
+            const slideNext = document.getElementById('modalSlideNext');
+            
+            [slideCurrent, slideNext].forEach(el => el.style.transition = 'transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)');
+            slideCurrent.style.transform = 'translateX(-100%) translateY(0px)';
+            slideNext.style.transform = 'translateX(0%)';
+
+            setTimeout(() => {
+                modalCurrentIdx = (modalCurrentIdx + 1) % modalPhotosList.length;
+                updateModalImages();
+            }, 350);
+        }
+
+        function prevModalImage(e) {
+            if (e) e.stopPropagation();
+            const slideCurrent = document.getElementById('modalSlideCurrent');
+            const slidePrev = document.getElementById('modalSlidePrev');
+            
+            [slideCurrent, slidePrev].forEach(el => el.style.transition = 'transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)');
+            slideCurrent.style.transform = 'translateX(100%) translateY(0px)';
+            slidePrev.style.transform = 'translateX(0%)';
+
+            setTimeout(() => {
+                modalCurrentIdx = (modalCurrentIdx - 1 + modalPhotosList.length) % modalPhotosList.length;
+                updateModalImages();
+            }, 350);
+        }
+
+        function pointerStart(e) {
+            activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+            if (activePointers.size === 2) {
+                isDragging = false;
+                const pts = Array.from(activePointers.values());
+                initialPinchDistance = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+                baseScaleForPinch = currentScale;
+                initialMidX = (pts[0].x + pts[1].x) / 2;
+                initialMidY = (pts[0].y + pts[1].y) / 2;
+                startPanX = panX;
+                startPanY = panY;
+            } else if (activePointers.size === 1) {
+                touchStartX = e.clientX;
+                touchStartY = e.clientY;
+                isDragging = true;
+                gestureDirection = null;
+                
+                const slidePrev = document.getElementById('modalSlidePrev');
+                const slideCurrent = document.getElementById('modalSlideCurrent');
+                const slideNext = document.getElementById('modalSlideNext');
+                [slidePrev, slideCurrent, slideNext].forEach(el => { if(el) el.style.transition = 'none'; });
+
+                if (currentScale > 1) {
+                    startPanX = panX;
+                    startPanY = panY;
+                } else {
+                    startTrackOffset = trackOffset;
+                    startVerticalOffset = verticalOffset;
+                }
+            }
+        }
+
+        function pointerMove(e) {
+            if (activePointers.has(e.pointerId)) {
+                activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+            }
+
+            if (activePointers.size === 2) {
+                const pts = Array.from(activePointers.values());
+                const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+                const currentMidX = (pts[0].x + pts[1].x) / 2;
+                const currentMidY = (pts[0].y + pts[1].y) / 2;
+
+                if (initialPinchDistance > 0) {
+                    let rawScale = baseScaleForPinch * (dist / initialPinchDistance);
+                    
+                    if (rawScale < 1) {
+                        currentScale = 1 - Math.pow(1 - rawScale, 0.7) * 0.4;
+                    } else if (rawScale > 4) {
+                        currentScale = 4 + Math.pow(rawScale - 4, 0.7) * 0.5;
+                    } else {
+                        currentScale = rawScale;
+                    }
+                    
+                    panX = startPanX + (currentMidX - initialMidX);
+                    panY = startPanY + (currentMidY - initialMidY);
+
+                    const imgEl = document.getElementById('modalImg');
+                    imgEl.style.transform = `translate(${panX}px, ${panY}px) scale(${currentScale})`;
+                }
+                return;
+            }
+
+            if (!isDragging) return;
+            touchCurrentX = e.clientX;
+            touchCurrentY = e.clientY;
+            let diffX = touchCurrentX - touchStartX;
+            let diffY = touchCurrentY - touchStartY;
+            const imgEl = document.getElementById('modalImg');
+
+            if (currentScale > 1) {
+                let targetX = startPanX + diffX;
+                let targetY = startPanY + diffY;
+
+                const natW = imgEl.naturalWidth || 800;
+                const natH = imgEl.naturalHeight || 600;
+                const maxW = window.innerWidth * 0.95;
+                const maxH = window.innerHeight * 0.85;
+                let renderW = maxW;
+                let renderH = (natH / natW) * renderW;
+                if (renderH > maxH) {
+                    renderH = maxH;
+                    renderW = (natW / natH) * renderH;
+                }
+                const scaledW = renderW * currentScale;
+                const scaledH = renderH * currentScale;
+                
+                const limitX = Math.max(0, (scaledW - window.innerWidth) / 2);
+                const limitY = Math.max(0, (scaledH - window.innerHeight) / 2);
+
+                if (Math.abs(targetX) > limitX) {
+                    let excess = Math.abs(targetX) - limitX;
+                    targetX = Math.sign(targetX) * (limitX + Math.pow(excess, 0.75) * 0.4);
+                }
+                if (Math.abs(targetY) > limitY) {
+                    let excess = Math.abs(targetY) - limitY;
+                    targetY = Math.sign(targetY) * (limitY + Math.pow(excess, 0.75) * 0.4);
+                }
+
+                panX = targetX;
+                panY = targetY;
+                imgEl.style.transform = `translate(${panX}px, ${panY}px) scale(${currentScale})`;
+            } else {
+                if (!gestureDirection && Math.hypot(diffX, diffY) > 10) {
+                    if (Math.abs(diffX) >= Math.abs(diffY) * 1.732) {
+                        gestureDirection = 'horizontal';
+                    } else {
+                        gestureDirection = 'vertical';
+                    }
+                }
+
+                const slidePrev = document.getElementById('modalSlidePrev');
+                const slideCurrent = document.getElementById('modalSlideCurrent');
+                const slideNext = document.getElementById('modalSlideNext');
+
+                if (gestureDirection === 'horizontal') {
+                    trackOffset = startTrackOffset + diffX;
+                    verticalOffset = 0;
+                    slidePrev.style.transform = `translateX(calc(-100% + ${trackOffset}px)) translateY(0px)`;
+                    slideCurrent.style.transform = `translate(${trackOffset}px, 0px) scale(1)`;
+                    slideNext.style.transform = `translateX(calc(100% + ${trackOffset}px)) translateY(0px)`;
+                } else if (gestureDirection === 'vertical') {
+                    trackOffset = startTrackOffset;
+                    verticalOffset = Math.sign(diffY) * Math.pow(Math.abs(diffY), 0.75) * 0.55;
+                    slidePrev.style.transform = `translateX(-100%) translateY(${verticalOffset * 0.3}px)`;
+                    slideCurrent.style.transform = `translate(0px, ${verticalOffset}px) scale(1)`;
+                    slideNext.style.transform = `translateX(100%) translateY(${verticalOffset * 0.3}px)`;
+                }
+            }
+        }
+
+        function pointerEnd(e) {
+            activePointers.delete(e.pointerId);
+
+            if (activePointers.size < 2) {
+                initialPinchDistance = 0;
+            }
+
+            const imgEl = document.getElementById('modalImg');
+            if (currentScale < 1 || currentScale > 4) {
+                imgEl.style.transition = 'transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                if (currentScale < 1) {
+                    currentScale = 1;
+                    panX = 0;
+                    panY = 0;
+                    verticalOffset = 0;
+                } else if (currentScale > 4) {
+                    currentScale = 4;
+                }
+                imgEl.style.transform = `translate(${panX}px, ${panY + verticalOffset}px) scale(${currentScale})`;
+                setTimeout(() => { imgEl.style.transition = 'none'; }, 450);
+                return;
+            }
+
+            if (activePointers.size === 0) {
+                if (!isDragging) return;
+                isDragging = false;
+                const wasHorizontal = gestureDirection === 'horizontal';
+                gestureDirection = null;
+
+                if (currentScale > 1) {
+                    const natW = imgEl.naturalWidth || 800;
+                    const natH = imgEl.naturalHeight || 600;
+                    const maxW = window.innerWidth * 0.95;
+                    const maxH = window.innerHeight * 0.85;
+                    let renderW = maxW;
+                    let renderH = (natH / natW) * renderW;
+                    if (renderH > maxH) {
+                        renderH = maxH;
+                        renderW = (natW / natH) * renderH;
+                    }
+                    const scaledW = renderW * currentScale;
+                    const scaledH = renderH * currentScale;
+                    
+                    const limitX = Math.max(0, (scaledW - window.innerWidth) / 2);
+                    const limitY = Math.max(0, (scaledH - window.innerHeight) / 2);
+
+                    let clampedX = Math.max(-limitX, Math.min(limitX, panX));
+                    let clampedY = Math.max(-limitY, Math.min(limitY, panY));
+                    
+                    if (clampedX !== panX || clampedY !== panY) {
+                        imgEl.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                        panX = clampedX;
+                        panY = clampedY;
+                        imgEl.style.transform = `translate(${panX}px, ${panY}px) scale(${currentScale})`;
+                        setTimeout(() => { imgEl.style.transition = 'none'; }, 400);
+                    }
+                    return;
+                }
+
+                const slidePrev = document.getElementById('modalSlidePrev');
+                const slideCurrent = document.getElementById('modalSlideCurrent');
+                const slideNext = document.getElementById('modalSlideNext');
+
+                verticalOffset = 0;
+
+                if (wasHorizontal) {
+                    if (trackOffset > 80) {
+                        [slidePrev, slideCurrent].forEach(el => el.style.transition = 'transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)');
+                        slidePrev.style.transform = 'translateX(0%) translateY(0px)';
+                        slideCurrent.style.transform = 'translateX(100%) translateY(0px)';
+                        setTimeout(() => {
+                            modalCurrentIdx = (modalCurrentIdx - 1 + modalPhotosList.length) % modalPhotosList.length;
+                            updateModalImages();
+                        }, 350);
+                    } else if (trackOffset < -80) {
+                        [slideNext, slideCurrent].forEach(el => el.style.transition = 'transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)');
+                        slideNext.style.transform = 'translateX(0%) translateY(0px)';
+                        slideCurrent.style.transform = 'translateX(-100%) translateY(0px)';
+                        setTimeout(() => {
+                            modalCurrentIdx = (modalCurrentIdx + 1) % modalPhotosList.length;
+                            updateModalImages();
+                        }, 350);
+                    } else {
+                        [slidePrev, slideCurrent, slideNext].forEach(el => {
+                            if (el) el.style.transition = 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)';
+                        });
+                        slidePrev.style.transform = 'translateX(-100%) translateY(0px)';
+                        slideCurrent.style.transform = 'translate(0px, 0px) scale(1)';
+                        slideNext.style.transform = 'translateX(100%) translateY(0px)';
+                        trackOffset = 0;
+                    }
+                } else {
+                    [slidePrev, slideCurrent, slideNext].forEach(el => {
+                        if (el) el.style.transition = 'transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                    });
+                    slidePrev.style.transform = 'translateX(-100%) translateY(0px)';
+                    slideCurrent.style.transform = 'translate(0px, 0px) scale(1)';
+                    slideNext.style.transform = 'translateX(100%) translateY(0px)';
+                    trackOffset = 0;
+                }
+            } else if (activePointers.size === 1) {
+                const remaining = Array.from(activePointers.values())[0];
+                touchStartX = remaining.x;
+                touchStartY = remaining.y;
+                isDragging = true;
+                gestureDirection = null;
+                startPanX = panX;
+                startPanY = panY;
+            }
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('imageModal');
+            modal.classList.add('hidden');
+            const imgEl = document.getElementById('modalImg');
+            imgEl.style.transform = 'translate(0px, 0px) scale(1)';
+            currentScale = 1;
+            panX = 0;
+            panY = 0;
+            trackOffset = 0;
+            verticalOffset = 0;
+            gestureDirection = null;
+            activePointers.clear();
+        }
+
+        /* 🌟 🖨️ 打字機逐字列印核心函數 (速度 140ms) */
+        function typeWriterEffect(element, text, speed = 140) {
+            element.textContent = '';
+            element.classList.add('typing-cursor');
+            let index = 0;
+
+            function type() {
+                if (index < text.length) {
+                    element.textContent += text.charAt(index);
+                    index++;
+                    setTimeout(type, speed);
+                } else {
+                    element.classList.remove('typing-cursor');
+                }
+            }
+            type();
+        }
+
+        const blessingForm = document.getElementById('blessingForm');
+        blessingForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('blessingName').value;
+            const message = document.getElementById('blessingText').value;
+
+            if (message.length > 150) {
+                showToast(currentLang === 'zh' ? '電報內容請限制在 150 字以內' : 'Message must be within 150 characters', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('blessingBtn');
+            const blessingBtnText = document.getElementById('blessingBtnText');
+            const dict = translations[currentLang];
+
+            btn.disabled = true;
+            if (blessingBtnText) {
+                blessingBtnText.innerHTML = `<span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span> ${dict.sendingText}`;
+            }
+
+            try {
+                const res = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ type: "blessing", name: name, message: message })
+                });
+                const data = await res.json();
+
+                if (data.status === "success") {
+                    saveMyBlessingToken(data.fileId, data.token);
+                    localStorage.removeItem('wedding_blessing_draft');
+
+                    showToast(currentLang === 'zh' ? "✨ 電報成功發送至婚禮現場！" : "✨ Telegram transmitted successfully!");
+                    blessingForm.reset();
+                    handleBlessingInput();
+                    
+                    const savedName = localStorage.getItem('wedding_user_name');
+                    if (savedName) document.getElementById('blessingName').value = savedName;
+
+                    prependNewBlessingCardLocally(data.fileId, name, message, true);
+                    setTimeout(loadBlessings, 2000);
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (err) {
+                showToast(currentLang === 'zh' ? "❌ 傳輸失敗，請重新連線。" : "❌ Transmission failed, please retry.", 'error');
+            } finally {
+                btn.disabled = false;
+                if (blessingBtnText) blessingBtnText.textContent = dict.sendBlessing;
+            }
+        });
+
+        function prependNewBlessingCardLocally(fileId, name, message, animate = false) {
+            const container = document.getElementById('blessingContainer');
+            const dict = translations[currentLang];
+            
+            if (container.innerHTML.includes(dict.noBlessings) || container.innerHTML.includes('Connecting') || container.innerHTML.includes('RECEIVING')) {
+                container.innerHTML = "";
+            }
+
+            const todayStr = new Date().toISOString().split('T')[0];
+            const card = document.createElement('div');
+            card.className = "telegram-paper rounded-xl p-4 text-[#2b2b2b] border border-[#a89878] relative telegram-card typewriter-font shadow-sm transition-all duration-500 ring-2 ring-[#c9b082] flex flex-col justify-between w-full";
+            
+            const msgId = `msg_text_${fileId || Date.now()}`;
+
+            card.innerHTML = `
+                <div>
+                    <div class="border-b border-dashed border-[#8c7b5f] pb-1.5 mb-2 flex justify-between items-center text-[10px] text-[#594d3a]">
+                        <span class="font-bold tracking-wider">TELEGRAM</span>
+                        <span>${todayStr}</span>
+                    </div>
+                    <div class="space-y-1.5">
+                        <div class="text-xs text-[#4a3f2f] truncate">
+                            <span class="font-bold text-[#6b2d38]">FROM:</span> <span class="font-semibold">${escapeHtml(name)}</span>
+                        </div>
+                        <p id="${msgId}" class="text-xs text-[#1f1f1f] leading-relaxed pt-0.5 whitespace-pre-line border-l-2 border-[#6b2d38] pl-2.5">${animate ? '' : escapeHtml(message)}</p>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 mt-3 pt-2 border-t border-dashed border-[#b8aa8e]">
+                    <button onclick="openEditModal('${fileId}', '${escapeHtml(name)}', '${escapeHtml(message).replace(/'/g, "\\'")}')" class="text-[10px] bg-[#e6dfcc] hover:bg-[#d8ceb3] text-[#3d3323] px-2.5 py-1 rounded-lg transition font-medium cursor-pointer">${dict.editText}</button>
+                    <button onclick="deleteBlessing('${fileId}')" class="text-[10px] bg-[#f0d8d8] hover:bg-[#e6c2c2] text-[#7a2424] px-2.5 py-1 rounded-lg transition font-medium cursor-pointer">${dict.deleteText}</button>
+                </div>
+            `;
+            container.insertBefore(card, container.firstChild);
+            
+            if (animate) {
+                const msgEl = document.getElementById(msgId);
+                if (msgEl) typeWriterEffect(msgEl, message);
+            }
+
+            setTimeout(() => card.classList.remove('ring-2', 'ring-[#c9b082]'), 2500);
+        }
+
+        let hasAnimatedInitialBlessings = false;
+
+        async function loadBlessings() {
+            const container = document.getElementById('blessingContainer');
+            const refreshTextEl = document.getElementById('refreshWireText');
+            const dict = translations[currentLang];
+
+            try {
+                const res = await fetch(`${APPS_SCRIPT_URL}?action=getBlessings`);
+                const data = await res.json();
+                const myBlessingTokens = getMyBlessingTokens();
+
+                if (data.status === "success" && data.blessings && data.blessings.length > 0) {
+                    container.innerHTML = "";
+
+                    const shouldAnimate = !hasAnimatedInitialBlessings;
+
+                    data.blessings.forEach((b, idx) => {
+                        const isMyBlessing = myBlessingTokens[b.id] !== undefined;
+                        const msgId = `b_msg_${b.id}`;
+
+                        const card = document.createElement('div');
+                        card.className = "telegram-paper rounded-xl p-4 text-[#2b2b2b] border border-[#a89878] relative telegram-card typewriter-font shadow-sm flex flex-col justify-between w-full";
+                        
+                        let html = `
+                            <div>
+                                <div class="border-b border-dashed border-[#8c7b5f] pb-1.5 mb-2 flex justify-between items-center text-[10px] text-[#594d3a]">
+                                    <span class="font-bold tracking-wider">TELEGRAM</span>
+                                    <span>${b.date}</span>
+                                </div>
+
+                                <div class="space-y-1.5">
+                                    <div class="text-xs text-[#4a3f2f] truncate">
+                                        <span class="font-bold text-[#6b2d38]">FROM:</span> <span class="font-semibold">${escapeHtml(b.name)}</span>
+                                    </div>
+                                    <p id="${msgId}" class="text-xs text-[#1f1f1f] leading-relaxed pt-0.5 whitespace-pre-line border-l-2 border-[#6b2d38] pl-2.5">${shouldAnimate && idx === 0 ? '' : escapeHtml(b.message)}</p>
+                                </div>
+                            </div>
+                        `;
+
+                        if (isMyBlessing) {
+                            html += `
+                                <div class="flex justify-end gap-2 mt-3 pt-2 border-t border-dashed border-[#b8aa8e]">
+                                    <button onclick="openEditModal('${b.id}', '${escapeHtml(b.name)}', '${escapeHtml(b.message).replace(/'/g, "\\'")}')" class="text-[10px] bg-[#e6dfcc] hover:bg-[#d8ceb3] text-[#3d3323] px-2.5 py-1 rounded-lg transition font-medium cursor-pointer">${dict.editText}</button>
+                                    <button onclick="deleteBlessing('${b.id}')" class="text-[10px] bg-[#f0d8d8] hover:bg-[#e6c2c2] text-[#7a2424] px-2.5 py-1 rounded-lg transition font-medium cursor-pointer">${dict.deleteText}</button>
+                                </div>
+                            `;
+                        }
+
+                        card.innerHTML = html;
+                        container.appendChild(card);
+
+                        if (shouldAnimate && idx === 0) {
+                            const msgEl = document.getElementById(msgId);
+                            if (msgEl) typeWriterEffect(msgEl, b.message);
+                        }
+                    });
+
+                    hasAnimatedInitialBlessings = true;
+
+                } else {
+                    container.innerHTML = `<p class="col-span-full text-center text-xs text-[#a89878] typewriter-font py-6">${dict.noBlessings}</p>`;
+                }
+            } catch (err) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-6">
+                        <button onclick="loadBlessings()" class="typewriter-font text-xs text-[#c9b082] font-medium bg-[#132319] px-5 py-2.5 rounded-2xl shadow-sm border border-[#2a4533] hover:bg-[#1a2f22] transition cursor-pointer">
+                            ${dict.retryBtn}
+                        </button>
+                    </div>
+                `;
+            } finally {
+                if (refreshTextEl) {
+                    refreshTextEl.textContent = dict.refreshBlessings;
+                }
+            }
+        }
+
+        function openEditModal(fileId, name, message) {
+            document.getElementById('editFileId').value = fileId;
+            document.getElementById('editBlessingName').value = name;
+            document.getElementById('editBlessingText').value = message;
+            document.getElementById('editBlessingModal').classList.remove('hidden');
+            handleEditBlessingInput();
+        }
+        function closeEditModal() {
+            document.getElementById('editBlessingModal').classList.add('hidden');
+        }
+
+        async function submitEditBlessing() {
+            const fileId = document.getElementById('editFileId').value;
+            const name = document.getElementById('editBlessingName').value;
+            const message = document.getElementById('editBlessingText').value;
+
+            if (message.length > 150) {
+                showToast(currentLang === 'zh' ? '電報內容請限制在 150 字以內' : 'Message must be within 150 characters', 'error');
+                return;
+            }
+
+            const myTokens = getMyBlessingTokens();
+            const token = myTokens[fileId];
+
+            if (!token) {
+                showToast(currentLang === 'zh' ? '找不到此留言的修改權限！' : 'Edit permission not found!', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ type: "update_blessing", fileId: fileId, token: token, name: name, message: message })
+                });
+                const data = await res.json();
+
+                if (data.status === "success") {
+                    showToast(currentLang === 'zh' ? '修改成功！' : 'Updated successfully!');
+                    closeEditModal();
+                    loadBlessings();
+                } else {
+                    showToast((currentLang === 'zh' ? '修改失敗：' : 'Update failed: ') + data.message, 'error');
+                }
+            } catch (err) {
+                showToast(currentLang === 'zh' ? '修改時發生錯誤' : 'An error occurred', 'error');
+            }
+        }
+
+        async function deleteBlessing(fileId) {
+            if (!confirm(currentLang === 'zh' ? '確定要刪除這條電報嗎？' : 'Are you sure you want to delete this telegram?')) return;
+            const myTokens = getMyBlessingTokens();
+            const token = myTokens[fileId] || "";
+
+            try {
+                const res = await fetch(`${APPS_SCRIPT_URL}?action=deleteFile&fileId=${fileId}&token=${token}`);
+                const data = await res.json();
+                if (data.status === "success") {
+                    removeMyBlessingToken(fileId);
+                    showToast(currentLang === 'zh' ? '已成功刪除電報！' : 'Telegram deleted successfully!');
+                    loadBlessings();
+                } else {
+                    showToast((currentLang === 'zh' ? '刪除失敗：' : 'Deletion failed: ') + data.message, 'error');
+                }
+            } catch (err) {
+                showToast(currentLang === 'zh' ? '刪除發生錯誤' : 'An error occurred', 'error');
+            }
+        }
+
+        let currentAdminPwd = "";
+        let adminActiveTab = "photos"; 
+        let adminSelectedPhotoIds = new Set();
+        let adminSelectedBlessingIds = new Set();
+        let adminPhotosCache = [];
+        let adminBlessingsCache = [];
+
+        function openAdminModal() {
+            document.getElementById('adminModal').classList.remove('hidden');
+            document.getElementById('adminLoginView').classList.remove('hidden');
+            document.getElementById('adminDashboardView').classList.add('hidden');
+            document.getElementById('adminPwdInput').value = "";
+            document.getElementById('adminLoginError').classList.add('hidden');
+        }
+
+        function closeAdminModal() {
+            document.getElementById('adminModal').classList.add('hidden');
+        }
+
+        async function verifyAdmin() {
+            const pwd = document.getElementById('adminPwdInput').value;
+            const errEl = document.getElementById('adminLoginError');
+
+            try {
+                const res = await fetch(`${APPS_SCRIPT_URL}?action=adminLogin&pwd=${encodeURIComponent(pwd)}`);
+                const data = await res.json();
+
+                if (data.status === "success") {
+                    currentAdminPwd = pwd;
+                    document.getElementById('driveFolderBtn').href = data.folderUrl;
+                    document.getElementById('adminLoginView').classList.add('hidden');
+                    document.getElementById('adminDashboardView').classList.remove('hidden');
+                    document.getElementById('adminDashboardView').classList.add('flex');
+                    loadAdminItems();
+                } else {
+                    errEl.textContent = data.message;
+                    errEl.classList.add('hidden');
+                }
+            } catch (err) {
+                errEl.textContent = currentLang === 'zh' ? '連線發生錯誤' : 'Connection error';
+                errEl.classList.add('hidden');
+            }
+        }
+
+        function switchAdminTab(tab) {
+            adminActiveTab = tab;
+            const btnP = document.getElementById('adminTabPhotos');
+            const btnB = document.getElementById('adminTabBlessings');
+            const photoToolbar = document.getElementById('adminPhotoToolbar');
+            const blessingToolbar = document.getElementById('adminBlessingToolbar');
+
+            if (tab === 'photos') {
+                btnP.className = "py-2 px-4 border-b-2 border-[#788a75] text-[#788a75] transition font-semibold cursor-pointer";
+                btnB.className = "py-2 px-4 text-neutral-400 hover:text-neutral-600 transition cursor-pointer";
+                photoToolbar.classList.remove('hidden');
+                blessingToolbar.classList.add('hidden');
+            } else {
+                btnB.className = "py-2 px-4 border-b-2 border-[#788a75] text-[#788a75] transition font-semibold cursor-pointer";
+                btnP.className = "py-2 px-4 text-neutral-400 hover:text-neutral-600 transition cursor-pointer";
+                photoToolbar.classList.add('hidden');
+                blessingToolbar.classList.remove('hidden');
+            }
+            renderAdminContainer();
+        }
+
+        async function loadAdminItems() {
+            const container = document.getElementById('adminItemsContainer');
+            container.innerHTML = `<p class="text-center text-xs text-neutral-400 py-4">Loading...</p>`;
+            adminSelectedPhotoIds.clear();
+            adminSelectedBlessingIds.clear();
+
+            try {
+                const [photoRes, blessingRes] = await Promise.all([
+                    fetch(`${APPS_SCRIPT_URL}?action=getPhotos`),
+                    fetch(`${APPS_SCRIPT_URL}?action=getBlessings`)
+                ]);
+                const photoData = await photoRes.json();
+                const blessingData = await blessingRes.json();
+
+                adminPhotosCache = photoData.status === "success" ? photoData.photos : [];
+                adminBlessingsCache = blessingData.status === "success" ? blessingData.blessings : [];
+
+                renderAdminContainer();
+            } catch (err) {
+                container.innerHTML = `<p class="text-center text-xs text-neutral-400 py-4">Failed to load items</p>`;
+            }
+        }
+
+        function renderAdminContainer() {
+            const container = document.getElementById('adminItemsContainer');
+            const dict = translations[currentLang];
+            container.innerHTML = "";
+
+            if (adminActiveTab === 'photos') {
+                if (adminPhotosCache.length === 0) {
+                    container.innerHTML = `<p class="text-center text-xs text-neutral-400 py-4">No photos found</p>`;
+                    updateAdminPhotoButtons();
+                    return;
+                }
+
+                adminPhotosCache.forEach(p => {
+                    const isChecked = adminSelectedPhotoIds.has(p.id);
+                    const row = document.createElement('div');
+                    row.className = `flex items-center justify-between bg-white p-2.5 rounded-2xl shadow-sm text-xs cursor-pointer border transition ${isChecked ? 'border-[#788a75] bg-neutral-100/60' : 'border-neutral-100'}`;
+                    row.onclick = () => toggleAdminPhotoSelect(p.id);
+
+                    row.innerHTML = `
+                        <div class="flex items-center gap-3 overflow-hidden">
+                            <input type="checkbox" ${isChecked ? 'checked' : ''} onclick="event.stopPropagation(); toggleAdminPhotoSelect('${p.id}')" class="w-4 h-4 accent-[#788a75] cursor-pointer">
+                            <img src="${p.url}" class="w-10 h-10 object-cover rounded-xl border border-neutral-200">
+                            <span class="truncate text-neutral-700 font-medium">${escapeHtml(p.name || 'Photo')}</span>
+                        </div>
+                        <button onclick="event.stopPropagation(); adminDelete('${p.id}')" class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-xl text-[10px] shrink-0 transition font-medium shadow-sm cursor-pointer">${dict.deleteText}</button>
+                    `;
+                    container.appendChild(row);
+                });
+                updateAdminPhotoButtons();
+
+            } else {
+                if (adminBlessingsCache.length === 0) {
+                    container.innerHTML = `<p class="text-center text-xs text-neutral-400 py-4">No blessings found</p>`;
+                    updateAdminBlessingButtons();
+                    return;
+                }
+
+                adminBlessingsCache.forEach(b => {
+                    const isChecked = adminSelectedBlessingIds.has(b.id);
+                    const row = document.createElement('div');
+                    row.className = `flex items-center justify-between bg-white p-3 rounded-2xl shadow-sm text-xs cursor-pointer border transition ${isChecked ? 'border-[#788a75] bg-neutral-100/60' : 'border-neutral-100'}`;
+                    row.onclick = () => toggleAdminBlessingSelect(b.id);
+
+                    row.innerHTML = `
+                        <div class="flex items-center gap-3 overflow-hidden pr-2">
+                            <input type="checkbox" ${isChecked ? 'checked' : ''} onclick="event.stopPropagation(); toggleAdminBlessingSelect('${b.id}')" class="w-4 h-4 accent-[#788a75] cursor-pointer shrink-0">
+                            <div class="truncate text-neutral-700 typewriter-font">
+                                <span class="font-semibold text-[#788a75]">${escapeHtml(b.name)}:</span> 
+                                <span class="truncate">${escapeHtml(b.message)}</span>
+                            </div>
+                        </div>
+                        <button onclick="event.stopPropagation(); adminDelete('${b.id}')" class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-xl text-[10px] shrink-0 transition font-medium shadow-sm cursor-pointer">${dict.deleteText}</button>
+                    `;
+                    container.appendChild(row);
+                });
+                updateAdminBlessingButtons();
+            }
+        }
+
+        function toggleAdminPhotoSelect(photoId) {
+            if (adminSelectedPhotoIds.has(photoId)) adminSelectedPhotoIds.delete(photoId);
+            else adminSelectedPhotoIds.add(photoId);
+            renderAdminContainer();
+        }
+
+        function adminSelectAllPhotos(selectAll) {
+            if (selectAll) adminPhotosCache.forEach(p => adminSelectedPhotoIds.add(p.id));
+            else adminSelectedPhotoIds.clear();
+            renderAdminContainer();
+        }
+
+        function toggleAdminBlessingSelect(blessingId) {
+            if (adminSelectedBlessingIds.has(blessingId)) adminSelectedBlessingIds.delete(blessingId);
+            else adminSelectedBlessingIds.add(blessingId);
+            renderAdminContainer();
+        }
+
+        function adminSelectAllBlessings(selectAll) {
+            if (selectAll) adminBlessingsCache.forEach(b => adminSelectedBlessingIds.add(b.id));
+            else adminSelectedBlessingIds.clear();
+            renderAdminContainer();
+        }
+
+        function updateAdminPhotoButtons() {
+            const countSpan = document.getElementById('adminSelectedPhotoCount');
+            const downloadBtn = document.getElementById('adminBatchDownloadBtn');
+            const deleteBtn = document.getElementById('adminBatchDeleteBtn');
+            const count = adminSelectedPhotoIds.size;
+            if (countSpan) countSpan.textContent = count;
+
+            if (downloadBtn && deleteBtn) {
+                if (count > 0) {
+                    downloadBtn.disabled = false;
+                    downloadBtn.className = "flex-1 bg-[#788a75] hover:bg-[#687a65] text-white py-2 rounded-xl text-xs font-medium transition shadow-sm cursor-pointer";
+                    deleteBtn.disabled = false;
+                    deleteBtn.className = "btn-morph flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-xl text-xs font-medium transition shadow-sm flex items-center justify-center relative overflow-hidden cursor-pointer";
+                } else {
+                    downloadBtn.disabled = true;
+                    downloadBtn.className = "flex-1 bg-neutral-200 text-neutral-400 py-2 rounded-xl text-xs font-medium transition cursor-not-allowed";
+                    deleteBtn.disabled = true;
+                    deleteBtn.className = "btn-morph flex-1 bg-neutral-200 text-neutral-400 py-2 rounded-xl text-xs font-medium transition cursor-not-allowed flex items-center justify-center relative overflow-hidden";
+                }
+            }
+        }
+
+        function updateAdminBlessingButtons() {
+            const countSpan = document.getElementById('adminSelectedBlessingCount');
+            const deleteBtn = document.getElementById('adminBatchBlessingDeleteBtn');
+            const count = adminSelectedBlessingIds.size;
+            if (countSpan) countSpan.textContent = count;
+
+            if (deleteBtn) {
+                if (count > 0) {
+                    deleteBtn.disabled = false;
+                    deleteBtn.className = "btn-morph bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition shadow-sm flex items-center justify-center relative overflow-hidden cursor-pointer";
+                } else {
+                    deleteBtn.disabled = true;
+                    deleteBtn.className = "btn-morph bg-neutral-200 text-neutral-400 px-4 py-2 rounded-xl text-xs font-medium transition cursor-not-allowed flex items-center justify-center relative overflow-hidden";
+                }
+            }
+        }
+
+        async function executeAdminBatchDownload() {
+            if (adminSelectedPhotoIds.size === 0) return;
+            const confirmMsg = currentLang === 'zh' ? `確定要下載選中的 ${adminSelectedPhotoIds.size} 張相片嗎？` : `Are you sure you want to download ${adminSelectedPhotoIds.size} selected photo(s)?`;
+            if (!confirm(confirmMsg)) return;
+
+            const selectedPhotos = adminPhotosCache.filter(p => adminSelectedPhotoIds.has(p.id));
+            showToast(currentLang === 'zh' ? `開始下載 ${selectedPhotos.length} 張相片...` : `Starting download of ${selectedPhotos.length} photo(s)...`);
+
+            for (let i = 0; i < selectedPhotos.length; i++) {
+                const p = selectedPhotos[i];
+                try {
+                    const response = await fetch(p.url);
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = p.name || `wedding_photo_${i + 1}.jpg`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    await new Promise(r => setTimeout(r, 400));
+                } catch (e) {}
+            }
+            showToast(currentLang === 'zh' ? `✨ 成功完成 ${selectedPhotos.length} 張相片下載！` : `✨ Successfully downloaded ${selectedPhotos.length} photo(s)!`);
+        }
+
+        async function executeAdminBatchDelete() {
+            if (adminSelectedPhotoIds.size === 0) return;
+            const total = adminSelectedPhotoIds.size;
+            const confirmMsg = currentLang === 'zh' ? `確定要刪除選中的 ${total} 張相片嗎？` : `Are you sure you want to delete ${total} selected photo(s)?`;
+            if (!confirm(confirmMsg)) return;
+
+            const deleteBtn = document.getElementById('adminBatchDeleteBtn');
+            const btnText = document.getElementById('adminBatchDeleteBtnText');
+            const spinner = document.getElementById('adminBatchDeleteSpinner');
+            const check = document.getElementById('adminBatchDeleteCheck');
+
+            deleteBtn.disabled = true;
+            deleteBtn.classList.add('morphing');
+            btnText.classList.add('hidden');
+            spinner.classList.remove('hidden');
+
+            let successCount = 0;
+            let current = 0;
+
+            for (const photoId of adminSelectedPhotoIds) {
+                current++;
+                showToast(currentLang === 'zh' ? `正在刪除相片 (${current}/${total})...` : `Deleting photo (${current}/${total})...`);
+                try {
+                    const res = await fetch(`${APPS_SCRIPT_URL}?action=deleteFile&fileId=${photoId}&pwd=${encodeURIComponent(currentAdminPwd)}`);
+                    const data = await res.json();
+                    if (data.status === "success") successCount++;
+                } catch(e) {}
+            }
+
+            spinner.classList.add('hidden');
+            check.classList.remove('hidden');
+            deleteBtn.style.backgroundColor = '#788a75';
+
+            showToast(currentLang === 'zh' ? `成功刪除 ${successCount} 張相片！` : `Successfully deleted ${successCount} photo(s)!`);
+            
+            setTimeout(() => {
+                deleteBtn.classList.remove('morphing');
+                check.classList.add('hidden');
+                btnText.classList.remove('hidden');
+                deleteBtn.style.backgroundColor = '';
+                deleteBtn.disabled = false;
+                adminSelectedPhotoIds.clear();
+                loadAdminItems();
+                loadGallery();
+            }, 1500);
+        }
+
+        async function executeAdminBatchBlessingDelete() {
+            if (adminSelectedBlessingIds.size === 0) return;
+            const total = adminSelectedBlessingIds.size;
+            const confirmMsg = currentLang === 'zh' ? `確定要刪除選中的 ${total} 條祝福嗎？` : `Are you sure you want to delete ${total} selected blessing(s)?`;
+            if (!confirm(confirmMsg)) return;
+
+            const deleteBtn = document.getElementById('adminBatchBlessingDeleteBtn');
+            const btnText = document.getElementById('adminBatchBlessingDeleteBtnText');
+            const spinner = document.getElementById('adminBatchBlessingDeleteSpinner');
+            const check = document.getElementById('adminBatchBlessingDeleteCheck');
+
+            deleteBtn.disabled = true;
+            deleteBtn.classList.add('morphing');
+            btnText.classList.add('hidden');
+            spinner.classList.remove('hidden');
+
+            let successCount = 0;
+            let current = 0;
+
+            for (const blessingId of adminSelectedBlessingIds) {
+                current++;
+                showToast(currentLang === 'zh' ? `正在刪除祝福 (${current}/${total})...` : `Deleting blessing (${current}/${total})...`);
+                try {
+                    const resFetch = await fetch(`${APPS_SCRIPT_URL}?action=deleteFile&fileId=${blessingId}&pwd=${encodeURIComponent(currentAdminPwd)}`);
+                    const data = await resFetch.json();
+                    if (data.status === "success") successCount++;
+                } catch(e) {}
+            }
+
+            spinner.classList.add('hidden');
+            check.classList.add('hidden');
+            deleteBtn.style.backgroundColor = '#788a75';
+
+            showToast(currentLang === 'zh' ? `成功刪除 ${successCount} 條祝福！` : `Successfully deleted ${count} blessing(s)!`);
+            
+            setTimeout(() => {
+                deleteBtn.classList.remove('morphing');
+                check.classList.add('hidden');
+                btnText.classList.remove('hidden');
+                deleteBtn.style.backgroundColor = '';
+                deleteBtn.disabled = false;
+                adminSelectedBlessingIds.clear();
+                loadAdminItems();
+                loadBlessings();
+            }, 1500);
+        }
+
+        async function adminDelete(fileId) {
+            if (!confirm(currentLang === 'zh' ? '確定要刪除這個項目嗎？' : 'Are you sure you want to delete this item?')) return;
+
+            try {
+                const res = await fetch(`${APPS_SCRIPT_URL}?action=deleteFile&fileId=${fileId}&pwd=${encodeURIComponent(currentAdminPwd)}`);
+                const data = await res.json();
+                if (data.status === "success") {
+                    showToast(currentLang === 'zh' ? '刪除成功！' : 'Deleted successfully!');
+                    loadAdminItems();
+                    loadGallery();
+                    loadBlessings();
+                } else {
+                    showToast((currentLang === 'zh' ? '刪除失敗：' : 'Deletion failed: ') + data.message, 'error');
+                }
+            } catch (err) {
+                showToast(currentLang === 'zh' ? '刪除發生錯誤' : 'An error occurred', 'error');
+            }
+        }
+
+        async function deleteFile(fileId, token) {
+            if (!confirm(currentLang === 'zh' ? '確定要刪除這張相片嗎？' : 'Are you sure you want to delete this photo?')) return;
+
+            try {
+                const res = await fetch(`${APPS_SCRIPT_URL}?action=deleteFile&fileId=${fileId}&token=${token}`);
+                testData = await res.json();
+                if (testData.status === "success") {
+                    removeMyToken(token);
+                    showToast(currentLang === 'zh' ? '相片已成功刪除！' : 'Photo deleted successfully!');
+                    loadGallery();
+                } else {
+                    showToast((currentLang === 'zh' ? '刪除失敗：' : 'Deletion failed: ')+ testData.message, 'error');
+                }
+            } catch (err) {
+                showToast(currentLang === 'zh' ? '刪除時發生錯誤' : 'An error occurred', 'error');
+            }
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+        }
+
+        updateTexts();
+        loadGallery();
+    </script>
+</body>
+</html>
